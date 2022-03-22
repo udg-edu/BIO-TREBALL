@@ -1,0 +1,61 @@
+---
+title: "Treball Pràctic d'Estadística Aplicada"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = FALSE)
+if(!exists('.ID')){
+  .ID = '2002963'
+}
+load(sprintf('04-dades_aleatori/%s.RData', .ID))
+```
+
+## LES DADES
+
+El conjunt de dades que utilitzarem conté les dades de les espècies de plantes alpines _`r SPECIE1.LONG`_  i _`r SPECIE2.LONG`_ observades a la zona de Lieu-dit Aravo, al municipi de Valloire (França). A 75 zones es va registrar l'abundància de les dues espècies i diferentes característiques de la zona mostrejada. 
+
+* `Site`: Identificador del lloc de mostreig.
+* ``r SPECIE1``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE1.LONG`_  a la zona mostrejada.
+* ``r SPECIE2``: Estimació de la Taxa de l'abundància de l'espècie _`r SPECIE2.LONG`_  a la zona mostrejada.
+* `Slope`: Inclinació del terreny (en graus).
+* `Form`: Caracterització microtopogràfica de la forma del terreny en cinc categories: convex (_convexity_), pendent convex (_convex slope_), pendent accentuat (_right slope_), pendent còncau (_concave slope_), còncau (_concavity_).
+* `PhysD`: Pertorbació física. Percentatge de sòl sense vegetació a causa de processos físics.
+* `ZoogD`: Pertorbació zoogènica. Quantitat de sòl sense vegetació a causa de l'activitat de la marmota: no; alguns (_some_); alt (_high_).
+
+```{r, include=FALSE}
+url = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/%s.xlsx", .ID)
+```
+
+El conjunt de dades el trobareu disponible en format Excel a [`r url`](`r url`).
+
+## MOLT IMPORTANT: INSTRUCCIONS 
+
+__SI NO SEGUEIXES AQUESTES INSTRUCCIONS, POT SER QUE OBTINGUIS UN 0 A LA NOTA DEL TREBALL.__
+
+* __És un treball on s’han de mostrar l’assoliment dels continguts, procediments i mètodes de l’assignatura__.
+* El treball que presenteu ha de ser __anònim__. El vostre nom no hi pot aparèixer, únicament pot aparèixer-hi el codi UdG del grup.
+* Cal __raonar__ els __resultats__ i les __passes seguides__ per aconseguir-los. 
+* Feu una __captura de pantalla__ amb el menú i els camps que heu utilitzat. 
+* Incorporeu només les sortides numèriques i gràfiques d’R __que creieu indispensables acompanyades sempre d’una explicació/valoració__. No es valoraran els apartats que es limitin a copiar sortides d’R. 
+* Es valorarà molt positivament __la claredat i la concisió__ en la presentació de resultats. 
+* Com en tots els treballs de la carrera, en cada lliurament hi haurà d’haver un apartat introductori i un de conclusions. No cal incorporar un apartat de bibliografia.
+
+> Aquest treball pràctic està dividit en dues parts. Cadascuna de les parts té un termini de lliurament i s’ha de __lliurar a través del mòdul de Recollida de treballs i pràctiques del moodle__. No s’acceptaran els treballs pràctics que es lliurin fora del termini. 
+>
+> __MOLT IMPORTANT: cada una de les parts del treball s’han de lliurar en un arxiu pdf. No s'acceptaran treballs amb cap altre format.__
+
+\newpage
+
+## LLIURAMENT 1 (24 d'abril)
+
+1. Feu una estadística descriptiva (numèrica i gràfica) de la variable __`r NUM_RND[1]`__. _(0.5 punt)_ 
+
+2. Feu una estadística descriptiva (numèrica i gràfica) de la variable __`r CAT_RND[1]`__. _(0.5 punt)_
+
+3. Feu una estadística descriptiva conjunta (numèrica i gràfica) de les variables __`r CAT_RND[2]`__ i __`r SPECIE1`__. _(1 punt)_
+
+4. Crea una nova variable que prengui el valor 'alt' si __`r SPECIE1`__ és superior a 1, i 'baix' altrament. Feu un descriptiva conjunta (numèrica i gràfica) d'aquesta variable i la variable `ZoogD`. _(1.5 punt)_
+
+5. Feu una estadística descriptiva conjunta (numèrica i gràfica) del logarítme (funció `log()` d'R) de la variable __`r SPECIE2`__ i la variable __`r NUM_RND[2]`__. _(1.5 punt)_
+
