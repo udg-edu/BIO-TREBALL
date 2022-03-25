@@ -15,8 +15,7 @@ groups_clean = groups %>%
   ungroup() %>%
   select(time, id_group, id) %>%
   filter(!is.na(id)) %>%
-  group_by(id_group) %>%
-  filter(n() >= 3)
+  group_by(id_group)
 
 save(groups, groups_clean, file = '02-grups.RData')
 writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')

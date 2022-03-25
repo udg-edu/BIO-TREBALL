@@ -12,5 +12,6 @@ knitr::opts_chunk$set(echo = TRUE)
 groups_clean %>%
   group_by(`Hora creació` = time, `ID grup` = id_group) %>%
   summarise(.groups = 'drop', `ID membres` = paste(id, collapse=',')) %>%
+  mutate(`ID grup` = sprintf("[%s](https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf)", `ID grup`, `ID grup`)) %>%
   knitr::kable()
 ```
