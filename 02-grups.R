@@ -17,6 +17,12 @@ groups_clean = groups %>%
   filter(!is.na(id)) %>%
   group_by(id_group)
 
+groups_clean = groups_clean %>%
+  bind_rows(tibble(time = NA, id_group = 1979628, id = 'u1977843')) %>%
+  group_by(id_group) %>%
+  fill(time, .direction = 'updown') %>%
+  ungroup()
+
 save(groups, groups_clean, file = '02-grups.RData')
 writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
 
