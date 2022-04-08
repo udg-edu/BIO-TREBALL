@@ -5,3 +5,4 @@ alumnes = read_csv("courseid_29686_participants.csv", col_types = 'cccc') %>%
   mutate(id = str_c('u',id))
 
 cat(paste(pull(alumnes, id), collapse='|'))
+save(alumnes, file = '01-alumnes.RData')
