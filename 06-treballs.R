@@ -20,7 +20,9 @@ treballs_entregats = groups_clean %>%
   ungroup()
 
 correctors = groups_clean %>%
-  semi_join(treballs_entregats, by = 'id_group')
+  semi_join(treballs_entregats, by = 'id_group') %>%
+  filter(!id %in% c('u1980300'))
+
 
 with(treballs_entregats, walk2(id_group, fitxer, function(id, fname){
   file.copy(fname, sprintf("06-treballs/treball_%d.pdf", id))
