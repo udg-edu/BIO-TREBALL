@@ -21,7 +21,7 @@ treballs_entregats = groups_clean %>%
 
 correctors = groups_clean %>%
   semi_join(treballs_entregats, by = 'id_group') %>%
-  filter(!id %in% c('u1980300'))
+  filter(!id %in% c('u1980300', 'u1973529'))
 
 
 with(treballs_entregats, walk2(id_group, fitxer, function(id, fname){
@@ -30,6 +30,8 @@ with(treballs_entregats, walk2(id_group, fitxer, function(id, fname){
 
 save(treballs_entregats, correctors, file = '06-treballs.RData')
 writeLines(sprintf("%s", paste(unique(correctors$id), collapse = ' ')), con = 'udg_codis_correctors.txt')
+writeLines(sprintf("%s", paste(c('2002963',unique(treballs_entregats$id_group)), collapse = ' ')), con = 'codis_treballs.txt')
+
 
 rmarkdown::render("06-treballs.Rmd", output_file = "docs/2021/treballs.html")
 
