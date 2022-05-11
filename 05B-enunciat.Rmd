@@ -1,0 +1,69 @@
+---
+title: "Treball Pràctic d'Estadística Aplicada"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = FALSE)
+if(!exists('.ID')){
+  .ID = '2002963'
+}
+load(sprintf('04B-dades_aleatori/%s.RData', .ID))
+```
+
+## LES DADES
+
+El conjunt de dades que utilitzarem conté les dades de les espècies de plantes alpines _`r SPECIE1.LONG`_  i _`r SPECIE2.LONG`_ observades a la zona de Lieu-dit Aravo, al municipi de Valloire (França). A 75 zones es va registrar l'abundància de les dues espècies i diferentes característiques de la zona mostrejada. 
+
+* `Site`: Identificador del lloc de mostreig.
+* ``r SPECIE1``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE1.LONG`_  a la zona mostrejada.
+* ``r SPECIE2``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE2.LONG`_  a la zona mostrejada.
+* `Slope`: Inclinació del terreny (en graus).
+* `Form`: Caracterització microtopogràfica de la forma del terreny en cinc categories: convex (_convexity_), pendent convex (_convex slope_), pendent accentuat (_right slope_), pendent còncau (_concave slope_), còncau (_concavity_).
+* `PhysD`: Pertorbació física. Percentatge de sòl sense vegetació a causa de processos físics.
+* `ZoogD`: Pertorbació zoogènica. Quantitat de sòl sense vegetació a causa de l'activitat de la marmota: no; alguns (_some_); alt (_high_).
+
+```{r, include=FALSE}
+url = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/%s.xlsx", .ID)
+```
+
+El conjunt de dades el trobareu disponible en format Excel a [`r url`](`r url`).
+
+## MOLT IMPORTANT: INSTRUCCIONS 
+
+__SI NO SEGUEIXES AQUESTES INSTRUCCIONS, POT SER QUE OBTINGUIS UN 0 A LA NOTA DEL TREBALL.__
+
+* __És un treball on s’han de mostrar l’assoliment dels continguts, procediments i mètodes de l’assignatura__.
+* El treball que presenteu ha de ser __anònim__. El vostre nom no hi pot aparèixer, únicament pot aparèixer-hi el codi UdG del grup.
+* Cal __raonar__ els __resultats__ i les __passes seguides__ per aconseguir-los. 
+* Feu una __captura de pantalla__ amb el menú i els camps que heu utilitzat. 
+* Incorporeu només les sortides numèriques i gràfiques d’R __que creieu indispensables acompanyades sempre d’una explicació/valoració__. No es valoraran els apartats que es limitin a copiar sortides d’R. 
+* Es valorarà molt positivament __la claredat i la concisió__ en la presentació de resultats. 
+* Com en tots els treballs de la carrera, en cada lliurament hi haurà d’haver un apartat introductori i un de conclusions. No cal incorporar un apartat de bibliografia.
+
+> Aquest treball pràctic està dividit en dues parts. Cadascuna de les parts té un termini de lliurament i s’ha de __lliurar a través del mòdul de Recollida de treballs i pràctiques del moodle__. No s’acceptaran els treballs pràctics que es lliurin fora del termini. 
+>
+> __MOLT IMPORTANT: cada una de les parts del treball s’han de lliurar en un arxiu pdf. No s'acceptaran treballs amb cap altre format.__
+
+\newpage
+
+## LLIURAMENT 2 (30 de maig)
+
+> Tingues en compte el següent:
+>
+> * Sempre que facis un contrast, deixa clares la hipòtesi nul·la i l'alternativa. 
+> * Detalla sempre totes les assumpcions, i si no es compleixen, indica-ho i segueix amb el procés d'inferència que estiguis considerant.
+> * Sempre que puguis, utilitza el contrast que tinguin més potència.
+
+1. Dòna un interval del `r sprintf("%0.f%%", 100*CONF_LEVEL[1])` de confiança de la mitjana poblacional de la variable  __`r NUM_RND[1]`__. _(0.5 punt)_ 
+
+2. Decideix si veus raonable pensar que és igual de probable observar cada una de les categòries de la variable __`r CAT_RND[1]`__. _(0.5 punt)_
+
+3. Creus que existeixen evidències per pensar que la mitjana poblacional de la variable __`r SPECIE1`__ difereix entre les categòries de la variable __`r CAT_RND[2]`?__. _(0.75 punt)_
+
+4. Crea una nova variable que prengui el valor 'alt' si __`r SPECIE1`__ és superior a 1, i 'baix' altrament. Creus que el valor d'aquesta nova variables és independent de la variable `ZoogD`? _(1.5 punt)_
+
+5. Creus que en mitjana existeixen diferencies entre les taxes de l'abundància de l'espècie __`r SPECIE1`__ i l'espècie __`r SPECIE2`__? _(0.75 punt)_
+
+6. Crea una nova variable definida pel logaritme (funció `log()` d'R) del quocient entre les taxes de les dues espècies: __`r SPECIE1`__ i __`r SPECIE2`__ ( ``r sprintf("log(%s/%s)", SPECIE1, SPECIE2)`` ). Fixeu-vos que aquest logquocient ens indica quina és l'abundància de l'espècie __`r SPECIE1`__ respecte l'abundància de l'espècie __`r SPECIE2`__. Decideix si aquesta variable que acabes de crear és, en mitjana, diferent de zero. Independentment del que t'hagi sortit, explica quina seria la interpretació que donaries si obtinguessis que, en mitjana, la variable creada és diferent de zero?  _(1 punt)_
+
