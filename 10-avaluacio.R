@@ -128,6 +128,10 @@ filter(dnotes_individuals, naleatori == 1)
 
 notes_finals = dnotes_individuals %>%
   arrange(id) %>%
-  select(id, p1:anonim, `treballs no corregits o mal corregits` = naleatori, `Nota treball` = nota_treball_2)
+  select(id, p1:anonim, `treballs no corregits o mal corregits` = no_corr, `Nota treball` = nota_treball_2)
 
 save.image(file = '10-avaluacio.RData')
+
+load(file = '10-avaluacio.RData')
+
+rmarkdown::render("10-avaluacio.Rmd", output_file = "docs/2021/avaluacio_1.html")
