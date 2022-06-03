@@ -1,0 +1,17 @@
+---
+title: "Treballs entregats i membres del grup"
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE}
+correctors %>%
+  group_by(`ID grup` = id_group) %>%
+  summarise(.groups = 'drop', `ID membres` = paste(id, collapse=',')) %>%
+  mutate(`ID grup` = sprintf("[%s](https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/treball_2_%s.pdf)", `ID grup`, `ID grup`)) %>%
+  knitr::kable()
+```

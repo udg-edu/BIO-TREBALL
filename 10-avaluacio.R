@@ -134,4 +134,6 @@ save.image(file = '10-avaluacio.RData')
 
 load(file = '10-avaluacio.RData')
 
+
 rmarkdown::render("10-avaluacio.Rmd", output_file = "docs/2021/avaluacio_1.html")
+

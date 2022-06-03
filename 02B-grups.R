@@ -37,3 +37,4 @@ writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse =
 
 rmarkdown::render("02B-grups.Rmd", output_file = "docs/2021/grupsB.html")
 
+save(groups, groups_clean, file = '02B-grups.RData')

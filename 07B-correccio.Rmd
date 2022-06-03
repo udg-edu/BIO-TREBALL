@@ -1,0 +1,36 @@
+---
+title: "Dossier de correcció"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE)
+if(!exists('.ID')){
+  .ID = first(scan('udg_codis_correctors.txt', what = 'character'))
+}
+load('07B-correccio.RData')
+assignment = filter(assignments, id == .ID)
+
+id = assignment$id
+treb1 = assignment$treb1
+treb2 = assignment$treb2
+treb3 = assignment$treb3
+
+link_ = function(id, id_treb){
+  sprintf("[Accés al formulari](https://docs.google.com/forms/d/e/1FAIpQLSfEVadSuky9gkmmGbsKbgM7Lbbkbe4A6ITVPGAjI9rQt7TCEw/viewform?usp=pp_url&entry.1912960910=%s&entry.1481792059=%s)", id, id_treb)
+}
+```
+
+# Treballs a corregir
+
+Caldrà que corregeixis els següents treballs:
+
+```{r}
+pivot_longer(assignment, matches("treb.")) %>%
+  select(`Codi treball`= value) %>%
+  mutate(`Enllaç` = link_(id, `Codi treball`)) %>%
+  knitr::kable()
+```
+
