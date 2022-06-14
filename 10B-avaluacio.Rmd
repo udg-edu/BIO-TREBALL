@@ -7,7 +7,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
-load('10-avaluacio.RData')
+load('10B-avaluacio.RData')
 ```
 
 ```{r, echo=FALSE}

@@ -92,7 +92,7 @@ left_join(daleatori, dcorr_individual, by = 'id') %>%
 dpuntuacions = dcorr_alumnes %>%
   pivot_longer(nota:pg_3) %>%
   group_by(id_treb, name) %>%
-  summarise(value = median(value)) %>%
+  summarise(value = median(value, na.rm=TRUE)) %>%
   pivot_wider(names_from = name, values_from = value)
 
 in_01_range = function(x){
@@ -108,8 +108,7 @@ dnotes_treballs = dpuntuacions %>%
     p3 = in_01_range(-0.25 * (1-p3_0) + 0.2 * p3_1 + 0.1 * p3_2 + 0.1 * p3_3 + 0.1 * p3_5 + 0.1 * p3_6 + 0.2 * p3_7 + 0.2 * p3_8),
     p4 = in_01_range(-0.25 * (1-p4_0) + 0.5 * p4_1 + 0.5 * p4_2),
     p5 = in_01_range(-0.25 * (1-p5_0) + 0.2 * p5_1 + 0.4 * p5_2 + 0.2 * p5_3 + 0.2 * p5_4),
-    p6 = in_01_range(-0.25 * (1-p6_0) + 0.3 * p1_1 + 0.3 * p1_2 + 0.4 * p1_3),
-    p6_nota = n6,
+    p6 = in_01_range(-0.25 * (1-p6_0) + 0.3 * p1_1 + 0.3 * p1_2 + 0.2 * p1_3 + 0.2 * n6/10),
     intro = pg_1,
     raonament = pg_2,
     anonim = pg_3,
@@ -125,7 +124,7 @@ dnotes_individuals = dassignments %>%
   mutate(
     naleatori = as.integer(id %in% daleatori$id),
     no_corr = pmax(no_corr, naleatori * 3),
-    nota_treball_2 = nota_treball - 0.25 * no_corr)
+    nota_treball_2 = ceiling((nota_treball - 0.25 * no_corr)*20)/20)
 
 filter(dnotes_individuals, naleatori == 1)
 
@@ -134,7 +133,7 @@ notes_finals = dnotes_individuals %>%
   select(id, p1:anonim, `treballs no corregits o mal corregits` = no_corr, `Nota treball` = nota_treball_2)
 
 save.image(file = '10B-avaluacio.RData')
-
+writexl::write_xlsx(notes_finals, path = 'treball2.xlsx')
 load(file = '10B-avaluacio.RData')
 
 
