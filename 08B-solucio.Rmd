@@ -174,6 +174,17 @@ H_1: & \text{Algun $\sigma_i$ és diferent}
 \end{matrix}
 \]
 
+o 
+
+també
+
+\[
+\begin{matrix}
+H_0: & \text{Els residus són homoscedastics}\\
+H_1: & \text{Els residus no són homoescedastics}
+\end{matrix}
+\]
+
 ```{r}
 LeveneTest(Y, X)
 ```
@@ -182,8 +193,8 @@ LeveneTest(Y, X)
 
 \[
 \begin{matrix}
-H_0: & \text{Els residus són homoscedastics}\\
-H_1: & \text{Els residus no són homoescedastics}
+H_0: & \text{Els residus són normals}\\
+H_1: & \text{Els residus no són normals}
 \end{matrix}
 \]
 
