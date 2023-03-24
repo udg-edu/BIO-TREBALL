@@ -1,30 +1,72 @@
 library(googlesheets4)
-group_file = "https://docs.google.com/spreadsheets/d/1pcuNJJxuYyiabXOsZNN7owQtA3YvadmuiFGK4Ec377A/edit?usp=sharing"
-groups = read_sheet(group_file, col_names = c('time', 'udg1', 'udg2', 'udg3', 'udg4', 'udg5'), skip = 1)
+source('00-config.R')
+group_file = "https://docs.google.com/spreadsheets/d/1wEShudrzTE2Zy9E6qGE0UGZcabT8IZmtT_nola7-H4w/edit?usp=sharing"
+gs4_deauth()
+groups = read_sheet(group_file, col_names = c('time', 'id1', 'id2', 'id3', 'id4'), skip = 1)
+
+if(file.exists('02-grups.RData')){
+  load('02-grups.RData')
+  groups_clean_old = groups_clean
+}else{
+  groups_clean_old = tibble(time = as.POSIXct(double(0)),
+                         id_group_long = character(0),
+                         id_group = character(0),
+                         name = character(0),
+                         id = character(0))
+  pokemon_used = c()
+}
+
+set.seed(YEAR)
+library(stringi)
+pokemon = pull(read_csv('pokemon.csv'), name)
+valid = stri_enc_isascii(pokemon) & !str_detect(pokemon, " |-|\\?")
+pokemon = tolower(stri_enc_toascii(pokemon[valid]))
+pokemon = setdiff(pokemon, pokemon_used)
 
 library(dplyr)
 library(tidyr)
 groups_clean = groups %>%
-  pivot_longer(cols = starts_with('udg'), values_to = 'id') %>%
+  pivot_longer(cols = starts_with('id'), values_to = 'id') %>%
+  filter(!is.na(id)) %>%
   group_by(id) %>%
   slice_max(time, n = 1) %>%
   ungroup() %>%
   arrange(time, name) %>%
-  group_by(time) %>%
-  mutate(id_group = readr::parse_number(first(id))) %>%
-  ungroup() %>%
-  select(time, id_group, id) %>%
-  filter(!is.na(id)) %>%
-  group_by(id_group)
-
-groups_clean = groups_clean %>%
-  bind_rows(tibble(time = NA, id_group = 1979628, id = 'u1977843')) %>%
-  group_by(id_group) %>%
-  fill(time, .direction = 'updown') %>%
+  pivot_wider(names_from = name, values_from = id, values_fill = "") %>%
+  mutate(id_group_long = mapply(function(x1,x2,x3,x4) paste0(sort(c(x1,x2,x3,x4)), collapse=''), 
+                                id1, id2, id3, id4)) %>%
+  pivot_longer(matches("^id.$")) %>%
+  select(time, id_group_long, name, id = value)  %>%
+  filter(id != "") %>%
+  group_by(id_group_long) %>%
+  filter(n() > 2) %>%
   ungroup()
 
-save(groups, groups_clean, file = '02-grups.RData')
-writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
+groups_clean_differ = groups_clean %>%
+  anti_join(groups_clean_old, by = 'id_group_long')
 
-rmarkdown::render("02-grups.Rmd", output_file = "docs/2021/grups.html")
+if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
+  groups_clean_old_keep = groups_clean %>%
+    inner_join(select(groups_clean_old, id_group_long, id_group, id), by = c('id_group_long', 'id'))
+  
+  groups_clean_new = groups_clean %>%
+    anti_join(groups_clean_old, by = 'id_group_long') %>%
+    pivot_wider(names_from = name, values_from = id) %>%
+    mutate(id_group = pokemon[1:n()]) %>%
+    pivot_longer(matches("^id.$")) %>%
+    select(time, id_group_long, id_group, name, id = value) %>%
+    filter(id != "") %>%
+    group_by(id_group) %>%
+    filter(n() > 2) %>%
+    ungroup()
+  
+  pokemon_used = c(pokemon_used, unique(groups_clean_new$id_group))
+  
+  groups_clean = bind_rows(groups_clean_old, groups_clean_new)
+  
+  save(groups_clean, pokemon_used, file = '02-grups.RData')
+  writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
+  rmarkdown::render("02-grups.Rmd", output_file = sprintf("docs/%d/grups.html", YEAR))
+}
+
 

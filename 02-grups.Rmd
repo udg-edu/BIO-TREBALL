@@ -5,13 +5,18 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(DT)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, echo=FALSE}
 groups_clean %>%
+  mutate(time = format(groups_clean$time)) %>%
   group_by(`Hora creació` = time, `ID grup` = id_group) %>%
-  summarise(.groups = 'drop', `ID membres` = paste(id, collapse=',')) %>%
-  mutate(`ID grup` = sprintf("[%s](https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf)", `ID grup`, `ID grup`)) %>%
-  knitr::kable()
+  summarise(.groups = 'drop', `ID membres` = paste(sort(id), collapse=',')) %>%
+  mutate(`Dades` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx">penguins_%s.xlsx</a>', `ID grup`, `ID grup`),
+         `ID grup` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf">%s</a>', `ID grup`, `ID grup`),
+         ) %>%
+  select(`Hora creació`, `ID grup`, `ID membres`,  `Dades`) %>%
+  datatable(escape = FALSE, options = list(pageLength = -1, dom = 'ft'))
 ```
