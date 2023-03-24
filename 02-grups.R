@@ -69,7 +69,7 @@ if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
   writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
   rmarkdown::render("02-grups.Rmd", output_file = sprintf("docs/%d/grups.html", YEAR), quiet = TRUE)
   
-  cat(crayon::green(sprintf("Nous grups creats: %s.\n", paste(groups_clean_new$id_group, collapse=', '))))
+  cat(crayon::green(sprintf("Nous grups creats: %s.\n", paste(unique(groups_clean_new$id_group), collapse=', '))))
 }else{
   cat(crayon::blue("Cap grup nou.\n"))
 }
