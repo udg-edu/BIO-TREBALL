@@ -1,3 +1,4 @@
+suppressMessages(library(tidyverse))
 library(googlesheets4)
 source('00-config.R')
 group_file = "https://docs.google.com/spreadsheets/d/1wEShudrzTE2Zy9E6qGE0UGZcabT8IZmtT_nola7-H4w/edit?usp=sharing"
@@ -18,7 +19,7 @@ if(file.exists('02-grups.RData')){
 
 set.seed(YEAR)
 library(stringi)
-pokemon = pull(read_csv('pokemon.csv'), name)
+pokemon = pull(read_csv('pokemon.csv', col_types = cols()), name)
 valid = stri_enc_isascii(pokemon) & !str_detect(pokemon, " |-|\\?")
 pokemon = tolower(stri_enc_toascii(pokemon[valid]))
 pokemon = setdiff(pokemon, pokemon_used)
@@ -66,7 +67,11 @@ if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
   
   save(groups_clean, pokemon_used, file = '02-grups.RData')
   writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
-  rmarkdown::render("02-grups.Rmd", output_file = sprintf("docs/%d/grups.html", YEAR))
+  rmarkdown::render("02-grups.Rmd", output_file = sprintf("docs/%d/grups.html", YEAR), quiet = TRUE)
+  
+  cat(crayon::green(sprintf("Nous grups creats: %s.\n", paste(groups_clean_new$id_group, collapse=', '))))
+}else{
+  cat(crayon::blue("Cap grup nou.\n"))
 }
 
 
