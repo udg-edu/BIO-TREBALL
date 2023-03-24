@@ -15,7 +15,7 @@ groups_clean %>%
   group_by(`Hora creació` = time, `ID grup` = id_group) %>%
   summarise(.groups = 'drop', `ID membres` = paste(sort(id), collapse=',')) %>%
   mutate(`Dades` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx">penguins_%s.xlsx</a>', `ID grup`, `ID grup`),
-         `ID grup` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf">%s</a>', `ID grup`, `ID grup`),
+         `ID grup` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/enunciat1_%s.pdf">%s</a>', `ID grup`, `ID grup`),
          ) %>%
   select(`Hora creació`, `ID grup`, `ID membres`,  `Dades`) %>%
   datatable(escape = FALSE, options = list(pageLength = -1, dom = 'ft'))
