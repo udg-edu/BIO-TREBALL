@@ -20,7 +20,7 @@ if(file.exists('02-grups.RData')){
 set.seed(YEAR)
 library(stringi)
 pokemon = pull(read_csv('pokemon.csv', col_types = cols()), name)
-valid = stri_enc_isascii(pokemon) & !str_detect(pokemon, " |-|\\?")
+valid = stri_enc_isascii(pokemon) & !str_detect(pokemon, " |-|\\?|'")
 pokemon = tolower(stri_enc_toascii(pokemon[valid]))
 pokemon = setdiff(pokemon, pokemon_used)
 
