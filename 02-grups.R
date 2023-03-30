@@ -64,6 +64,16 @@ if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
   pokemon_used = c(pokemon_used, unique(groups_clean_new$id_group))
   
   groups_clean = bind_rows(groups_clean_old, groups_clean_new)
+  group_n = groups_clean %>%
+    count(id_group_long, name = 'n_old')
+  groups_clean = groups_clean %>%
+    group_by(id) %>%
+    slice_max(time, n = 1) %>%
+    group_by(id_group_long) %>%
+    mutate(n = n()) %>%
+    left_join(group_n, by = 'id_group_long') %>%
+    filter(n == n_old) %>%
+    ungroup()
   
   save(groups_clean, pokemon_used, file = '02-grups.RData')
   writeLines(sprintf("2002963 %s", paste(unique(groups_clean$id_group), collapse = ' ')), con = 'udg_codis_grup.txt')
