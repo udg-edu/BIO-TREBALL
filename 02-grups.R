@@ -62,16 +62,17 @@ if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
     ungroup()
   
   pokemon_used = c(pokemon_used, unique(groups_clean_new$id_group))
-  
-  groups_clean = bind_rows(groups_clean_old, groups_clean_new)
-  group_n = groups_clean %>%
+  group_new_n = groups_clean_new %>%
     count(id_group_long, name = 'n_old')
+  
+  groups_clean = bind_rows(groups_clean_old, left_join(groups_clean_new, group_new_n, by = 'id_group_long'))
+  
+  # S'elimina una persona que ja estigués en un altre grup.
   groups_clean = groups_clean %>%
     group_by(id) %>%
     slice_max(time, n = 1) %>%
     group_by(id_group_long) %>%
     mutate(n = n()) %>%
-    left_join(group_n, by = 'id_group_long') %>%
     filter(n == n_old) %>%
     ungroup()
   
