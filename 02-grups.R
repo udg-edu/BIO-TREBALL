@@ -40,7 +40,7 @@ groups_clean = groups %>%
   select(time, id_group_long, name, id = value)  %>%
   filter(id != "") %>%
   group_by(id_group_long) %>%
-  filter(n() > 1) %>%
+  # filter(n() > 1) %>%
   ungroup()
 
 groups_clean_differ = groups_clean %>%
@@ -58,7 +58,7 @@ if(nrow(groups_clean_differ) > 0){ # hi ha modificacions
     select(time, id_group_long, id_group, name, id = value) %>%
     filter(id != "") %>%
     group_by(id_group) %>%
-    filter(n() > 1) %>%
+    # filter(n() > 1) %>%
     ungroup()
   
   pokemon_used = c(pokemon_used, unique(groups_clean_new$id_group))
