@@ -1,6 +1,6 @@
 ---
 title: "Dossier de correcció"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE)
 if(!exists('.ID')){
   .ID = first(scan('udg_codis_correctors.txt', what = 'character'))
 }
+source('00-config.R')
 load('07-correccio.RData')
 
 assignment = filter(assignments, id == .ID)
@@ -20,25 +21,19 @@ treb2 = as.character(assignment$treb2)
 treb3 = as.character(assignment$treb3)
 
 link_form = function(id, id_treb){
-  sprintf("[Formulari](https://docs.google.com/forms/d/e/1FAIpQLSfEVadSuky9gkmmGbsKbgM7Lbbkbe4A6ITVPGAjI9rQt7TCEw/viewform?usp=pp_url&entry.1912960910=%s&entry.1481792059=%s)", id, id_treb)
+  sprintf("https://docs.google.com/forms/d/e/1FAIpQLSenxYjXCLp8x6cu0lOuIiECg09f8WiA5o9FsJSPB5VDLe--Aw/viewform?usp=pp_url&entry.1073457589=%s&entry.1570597957=%s", id, id_treb)
 }
-treballs = pivot_longer(assignment, matches("treb."), values_to = 'id_tr')
-url_comparacio = sprintf("https://docs.google.com/forms/d/e/1FAIpQLSfX_4zS0BOlPlosdQHAdpRSzOECzdnBLHY4Q08jhHDVgdjaZw/viewform?usp=pp_url&entry.1978343346=%s", id)
+treballs = pivot_longer(assignment, matches("treb."), names_to = 'name2', values_to = 'id_tr')
 ```
 
-# Instruccions
 
 Aquest document s'ha generat pel codi d'estudiant: `r id`. Si us plau, abans de seguir endavant comprova que és el teu.
 
 A la següent pàgina trobaràs informació de tres treballs realitzats per altres grups. De cada treball trobaràs enllaços al treball presentat, al formulari de correcció, a l'enunciat original que tenia el treball i a un document amb solucions del treball. Per accedir als enllaços hauries de poder clicar a sobre. Altrament, pots copiar i enganxar les adreces en un navegador. Per alguns dels enllaços caldrà que entris la teva informació per poder accedir al Moodle de l'assignatura.
 
-Els codis dels treballs que hauràs de revisar són, per ordre, `r treb1`, `r treb2` i `r treb3`. 
+Hauràs de revisar els treballs de grups: __`r treb1`__, __`r treb2`__ i __`r treb3`__. 
 
-__Quan hagis acabat de corregir els tres treballs__, caldrà que omplis el següent formulari on hauràs de dir quin dels tres treballs creus que és millor i quin creus que és pitjor. A continuació tens un enllaç al formulari:
-
-`r sprintf("[%s](%s)", url_comparacio, url_comparacio)`
-
-Finalment, recordar que el termini per realitzar la correcció és el dia 8 de maig.
+Finalment, recorda que el termini per realitzar la correcció és el dia 7 de maig.
 
 \newpage
 
@@ -48,14 +43,14 @@ Finalment, recordar que el termini per realitzar la correcció és el dia 8 de m
 
 ```{r}
 id_tr = as.character(slice(treballs, 1)$id_tr)
-url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/treball_%s.pdf", id_tr)
-url_formulari = sprintf("https://docs.google.com/forms/d/e/1FAIpQLSfEVadSuky9gkmmGbsKbgM7Lbbkbe4A6ITVPGAjI9rQt7TCEw/viewform?usp=pp_url&entry.1912960910=%s&entry.1481792059=%s", id, id_tr)
-url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf", id_tr)
-url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/solucio1_%s.pdf", id_tr)
+url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
+url_formulari = link_form(id, id_tr)
+url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
-`r id_tr`
+__`r id_tr`__
 
 * Enllaç al treball a avaluar:
 `r sprintf("[%s](%s)", url_treball, url_treball)`
@@ -73,14 +68,14 @@ url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder
 
 ```{r}
 id_tr = as.character(slice(treballs, 2)$id_tr)
-url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/treball_%s.pdf", id_tr)
-url_formulari = sprintf("https://docs.google.com/forms/d/e/1FAIpQLSfEVadSuky9gkmmGbsKbgM7Lbbkbe4A6ITVPGAjI9rQt7TCEw/viewform?usp=pp_url&entry.1912960910=%s&entry.1481792059=%s", id, id_tr)
-url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf", id_tr)
-url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/solucio1_%s.pdf", id_tr)
+url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
+url_formulari = link_form(id, id_tr)
+url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
-`r id_tr`
+__`r id_tr`__
 
 * Enllaç al treball a avaluar:
 `r sprintf("[%s](%s)", url_treball, url_treball)`
@@ -98,14 +93,14 @@ url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder
 
 ```{r}
 id_tr = as.character(slice(treballs, 3)$id_tr)
-url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/treball_%s.pdf", id_tr)
-url_formulari = sprintf("https://docs.google.com/forms/d/e/1FAIpQLSfEVadSuky9gkmmGbsKbgM7Lbbkbe4A6ITVPGAjI9rQt7TCEw/viewform?usp=pp_url&entry.1912960910=%s&entry.1481792059=%s", id, id_tr)
-url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/enunciat1_%s.pdf", id_tr)
-url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/solucio1_%s.pdf", id_tr)
+url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
+url_formulari = link_form(id, id_tr)
+url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
-`r id_tr`
+__`r id_tr`__
 
 * Enllaç al treball a avaluar:
 `r sprintf("[%s](%s)", url_treball, url_treball)`

@@ -1,234 +1,229 @@
 ---
-title: "Treball Pràctic d'Estadística Aplicada"
-output: pdf_document
+title: "Guia per corregir el treball d'Estadística Aplicada"
+output: 
+  pdf_document: 
+    extra_dependencies: wrapfig
+header-includes:
+  - \usepackage[catalan]{babel}
 ---
 
 ```{r setup, include=FALSE}
-library(tidyverse)
-library(knitr)
-knitr::opts_chunk$set(echo = FALSE)
-if(!exists('.ID')){
-  .ID = '2002963'
-}
-load(sprintf('04-dades_aleatori/%s.RData', .ID))
+knitr::opts_chunk$set(echo=FALSE, comment = " ", fig.align = 'center')
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(lmtest)
+library(readxl)
+library(stringr)
+if(!exists(".ID")) .ID = '2002963'
+penguins = read_excel( sprintf("05-enunciat/penguins_%s.xlsx", .ID))
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx", .ID)
 ```
 
-## LES DADES
+# Descripció del conjunt de dades del treball _`r .ID`_
 
-El conjunt de dades que utilitzarem conté les dades de les espècies de plantes alpines _`r SPECIE1.LONG`_  i _`r SPECIE2.LONG`_ observades a la zona de Lieu-dit Aravo, al municipi de Valloire (França). A 75 zones es va registrar l'abundància de les dues espècies i diferents característiques de la zona mostrejada. 
-
-* `Site`: Identificador del lloc de mostreig.
-* ``r SPECIE1``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE1.LONG`_  a la zona mostrejada.
-* ``r SPECIE2``: Estimació de la Taxa de l'abundància de l'espècie _`r SPECIE2.LONG`_  a la zona mostrejada.
-* `Slope`: Inclinació del terreny (en graus).
-* `Form`: Caracterització microtopogràfica de la forma del terreny en cinc categories: convex (_convexity_), pendent convex (_convex slope_), pendent accentuat (_right slope_), pendent còncau (_concave slope_), còncau (_concavity_).
-* `PhysD`: Pertorbació física. Percentatge de sòl sense vegetació a causa de processos físics.
-* `ZoogD`: Pertorbació zoogènica. Quantitat de sòl sense vegetació a causa de l'activitat de la marmota: no; alguns (_some_); alt (_high_).
-
-```{r, include=FALSE}
-url = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/%s.xlsx", .ID)
-```
-
-El conjunt de dades el trobareu disponible en format Excel a [`r url`](`r url`).
-
-Primeres línias del conjunt de dades:
+* En aquest apartat cal descriure les dades disponibles, i tal com es demana, resumir-les en __una__ sola taula. Una possible taula podria ser com la que es mostra a continuació:
 
 ```{r, echo=FALSE}
-knitr::kable(head(dades))
+desc_categoric = penguins %>%
+  mutate(year = as.character(year)) %>%
+  select(species, island, sex, year) %>%
+  pivot_longer(everything(), names_to = 'C1', values_to = 'C2') %>%
+  count(C1, C2) %>%
+  group_by(C1) %>%
+  mutate(C1 = c(C1[1], rep("", length(C1)-1)),
+         C2 = sprintf("\\textit{%s}", str_to_title(C2)),
+         p = prop.table(n),
+         text = sprintf("%d (%.1f%%)", n, 100*p))
+desc_numeric = penguins %>%
+  select(-species, -island, -sex, -year) %>%
+  pivot_longer(everything(), names_to = 'C1', values_to = 'C2') %>%
+  group_by(C1) %>%
+  summarise(m = mean(C2), s = sd(C2)) %>%
+  mutate(C2 = "",
+         text = sprintf("     %0.2f (%0.2f)", m, s))
+bind_rows(desc_numeric, desc_categoric) %>%
+  mutate(C1 = str_replace(str_replace(str_to_title(str_replace(C1, "_", " ")), "_mm", " (mm)"), "_g", " (g)")) %>%
+  select(C1,C2,text) %>%
+  knitr::kable(align = 'llr', caption = "Per les variables numèriques es mostra la mitjana i la desviació estandard, per les categòriques les freqüencies absolutes i relatives en tant per cent.", 
+               col.names = c('Variable', 'Categoria', sprintf('n=%d', nrow(penguins))))
 ```
 
-\newpage
+* És important que les __variables numèriques__ continguin la mitjana o la mediana com a mesura de centralitat, i la desviació estàndard o l'amplitud interquartílica o el primer i segon quartil com a mesures de dispersió. Com a mesura de dispersió també es podria acceptar mostrar el mínim i el màxim.
+* Les __variables categòriques__ hauran de contenir les freqüències absolutes de cada categoria, i les freqüències relatives. Aquestes últimes poden ser en tant per u (proporcions) o tant per cent (percentatge).
+* Per valorar si els estadístics que es mostren al treball són correctes, podeu fer servir la següent taula, on trobareu tots els estadístics calculats pel treball corregit:
 
-## SOLUCIÓ
 
-#### 1. Feu una estadística descriptiva (numèrica i gràfica) de la variable __`r NUM_RND[1]`__. _(0.5 punt)_ 
+```{r, echo=FALSE}
+penguins %>%
+  select(-species, -island, -sex) %>%
+  pivot_longer(everything(), names_to = 'Variable') %>%
+  mutate(Variable = str_replace(str_replace(str_to_title(str_replace(Variable, "_", " ")), "_mm", " (mm)"), "_g", " (g)")) %>%
+  group_by(Variable) %>%
+  summarise(Mitj. = mean(value), Desv. = sd(value), AIQ = IQR(value),
+            Mínim = min(value), Q1 = quantile(value, 0.25), Mediana = median(value), Q3 = quantile(value, 0.75), Màxim = max(value),
+            `CV` = sd(value)/mean(value)) %>%
+  knitr::kable(digits = c(1,1,1,1,1,1,1,1,1,4))
+```
 
-La descriptiva numèrica ha de contenir, com a mínim, el nombre d'observacions, la mitjana, la desviació estàndard, els quartils (primer, mediana i tercer).
+* La variable `year` pot ser considerada numèrica o categòrica. Les dues opcions són vàlides.
+
+
+# Sobre el bec dels pingüins
+
+* En aquest apartat l'objectiu és construir la nova variable `difference` i descriure-la per donar arguments a favor o en contra de la hipòtesi que la llargada del bec és aproximadament 2.5 vegades més gran que la profunditat del bec.
+
+* Un cop s'hagi creat la  variable `difference = bill_length_mm - 2.5 * bill_depth_mm` s'ha de resumir amb alguns dels estadístics clàssics:
+
+```{r, echo=FALSE}
+(dat <- penguins %>%
+  transmute(difference = bill_length_mm - 2.5 * bill_depth_mm)) %>%
+  pivot_longer(everything(), names_to = 'Variable') %>%
+  mutate(Variable = str_replace(str_replace(str_to_title(str_replace(Variable, "_", " ")), "_mm", " (mm)"), "_g", " (g)")) %>%
+  group_by(Variable) %>%
+  summarise(Mitj. = mean(value), Desv. = sd(value), AIQ = IQR(value),
+            Mínim = min(value), Q1 = quantile(value, 0.25), Mediana = median(value), Q3 = quantile(value, 0.75), Màxim = max(value),
+            `CV` = sd(value)/mean(value)) %>%
+  knitr::kable(digits = c(1,1,1,1,1,1,1,1,1,4))
+```
+
+o bé amb un gràfic de caixa o histograma
+
+```{r, echo=FALSE, fig.width=8, fig.height=4}
+par(mfrow=c(1,2))
+with(dat, hist(difference, main = 'Histograma', ylab = 'Freqüència', xlab = ''))
+with(dat, boxplot(difference, main = 'Caixa de dispersió'))
+par(mfrow=c(1,1))
+```
+
+* Els arguments han d'anar en relació amb si té sentit pensar que la mitjana de la variable `difference` és igual a zero. Si podem assumir-ho, voldrà dir que podem assumir que el valor mitjà de la variable `bill_length_mm` i `2.5 * bill_depth_mm` són semblants.
+
+* Si en lloc de treballar amb la diferència entre `bill_length_mm` i `2.5 * bill_depth_mm` es treballa amb el seu quocient. També  es considerarà correcte si en el treball es mira si el quocient és proper a 1.
+
+
+# Sobre el sexe dels pingüins
+
+## La proporció de pingüins mascle i femella a la zona és semblant
+
+* L'objectiu d'aquest subapartat és mirar si la proporció de pingüins mascle és semblant a la dels pingüins femella. Dit d'altra manera, si aquestes proporcions són semblants a 0.5.
+
+* Cal fer una taula de freqüències absolutes o relatives, i amb la taula feta discutir si és raonable considerar que el nombre de pingüins de cada sexe és semblant. A continuació es mostren possibles taules que serien considerades correctes:
+
+__Freqüències absolutes:__
+
+```{r, echo=FALSE, comment=" "}
+tab <- with(penguins, table(sex))
+addmargins(tab)
+```
+
+__Freqüències relatives com a proporcions:__
+
+```{r, echo=FALSE, comment=" "}
+round(prop.table(tab),4)
+```
+
+__Freqüències relatives com a percentatges:__
+
+```{r, echo=FALSE, comment=" "}
+round(100*prop.table(tab),2)
+```
+
+* Cal mostrar un gràfic de pastís/sectors o un gràfic de barres. Els dos següents gràfics seran vàlids:
+
+```{r, echo=FALSE, fig.width=8, fig.height=4}
+par(mfrow=c(1,2))
+pie(tab, main = 'Gràfic de sectors')
+barplot(prop.table(tab), main = 'Gràfic de barres', ylim = c(0,1))
+par(mfrow=c(1,1))
+```
+
+## La profunditat del bec és semblant en funció del sexe del pingüí
+
+* L'objectiu del subapartat és comparar la profunditat del bec entre els pingüins dels dos sexes.
+* Caldrà mostrar els estadístics numèrics de la variable profunditat del bec dins de cada sexe.
+
+```{r, echo=FALSE, comment = " "}
+RcmdrMisc::numSummary(penguins[,"bill_depth_mm", drop=FALSE], groups=penguins$sex, 
+  statistics=c("mean", "sd", "IQR", "quantiles"), quantiles=c(0,.25,.5,.75,1))
+```
+
+* També caldrà mostrar un gràfic on es compari la profunditat del bec entre els sexes. El gràfic més adequat és el gràfic de caixa:
+
+```{r, echo=FALSE, fig.width=5, fig.height=4}
+boxplot(bill_depth_mm~sex, data = penguins, ylab = 'Profunditat del bec')
+```
+
+però també seria correcte mostrar l'histograma dins de cada sexe:
+
+```{r, echo=FALSE, fig.width=8, fig.height=4}
+par(mfrow=c(1,2))
+with(subset(penguins, sex == 'male'), hist(bill_depth_mm, main= "Pingüins mascle", xlab = "Profunditat del bec", ylab = 'Freqüència'))
+with(subset(penguins, sex == 'female'), hist(bill_depth_mm, main= "Pingüines femella", xlab = "Profunditat del bec", ylab = ''))
+par(mfrow=c(1,1))
+```
+
+## La distribució del sexe dels pingüins és independent de l'espècie
+
+* En aquest apartat cal veure si la distribució de pingüins mascle i femella es manté entre les espècies.
+* Caldrà fer una taula de freqüències marginals fila o columna, i discutir la semblança de cada perfil. Per exemple, si posem les espècies a les columnes, el perfil fila (perfil sexe) seria:
 
 ```{r}
-dades$var = dades[[NUM_RND[1]]]
-dades %>%
-  summarise(
-    n = n(),
-    mitjana = mean(var),
-    sd = sd(var),
-    Q1 = quantile(var, 0.25),
-    mediana = median(var),
-    Q3 = quantile(var, 0.75)
-  ) %>%
-  knitr::kable(digits = 3)
+tab = with(penguins, table(sex, species))
+round(tab1 <- prop.table(tab, 1), 4)
 ```
 
-La descriptiva gràfica hauria de contenir o bé l'histograma o bé el gràfic de caixa.
-
-```{r, fig.show='hold', out.width="50%"}
-hist(dades$var, xlab = NUM_RND[1], ylab = 'Freqüència', main = sprintf("Histograma\nvariable %s", NUM_RND[1]))
-bx = boxplot(dades$var,  ylab = NUM_RND[1], main = sprintf("Caixa de dispersió\nvariable %s", NUM_RND[1]))
-str_atipic = 'No hi ha dades atípiques'
-if(length(bx$out) == 1) str_atipic = sprintf("Hi ha una dada atípica, l'observació %d", bx$out)
-if(length(bx$out) > 1) str_atipic = sprintf("Hi ha diferents dades atípiques, les observacions: %s",
-                                            paste(bx$out, collapse = ', '))
-```
-
-**Comentaris**
-
-* Biaix a la dreta.
-* `r str_atipic`. (En cas que no s'hagi fet el gràfic de caixa, pot no comentar-se aquest aspecte).
-
-#### 2. Feu una estadística descriptiva (numèrica i gràfica) de la variable __`r CAT_RND[1]`__. _(0.5 punt)_
-
-La descriptiva numèrica hauria de contenir la taula de freqüències absoluta i relativa (en tant per u o en tant per cent).
+on veuríem si la distribució d'espècies és semblant entre els dos sexes (estaríem comparant la distribució `r sprintf("(%s)", paste(sprintf("%0.4f", tab1[1,]), collapse=', '))` amb la distribució `r sprintf("(%s)", paste(sprintf("%0.4f", tab1[2,]), collapse=', '))`). En el perfil columna (perfil espècie):
 
 ```{r}
-dades$var = dades[[CAT_RND[1]]]
-tab <- count(dades, Categories = var, name = 'Freq.absoluta') %>%
-  mutate(`Freq.relativa` = prop.table(`Freq.absoluta`),
-         `Percentatge` = `Freq.relativa` * 100) 
-tab %>%
-  knitr::kable(digits = 3)
-
-tab_max = tab %>%
-  slice_max(Freq.absoluta)
-if(nrow(tab_max) == 1){
-  str_mode = sprintf('La moda de la variable és `%s`.', tab_max$Categories)
-}else{
-  str_mode = sprintf('Les categòries modals són %s.', paste(sprintf("`%s`", tab_max$Categories), collapse=', '))
-}
+round(tab2 <- prop.table(tab, 2), 4)
 ```
 
-La descriptiva gràfica hauria de contenir o bé un gràfic de barres o un gràfic de pastís.
+estaríem mirant si la proporció dels dos sexes és semblant dins de les tres espècies.
 
-```{r, fig.show='hold', out.width="50%"}
-barplot(tab$Freq.absoluta, names.arg = tab$Categories)
-pie(tab$Freq.absoluta, labels = tab$Categories)
+* També caldrà fer un gràfic de barres on es mostrin aquestes marginals (de costat o apilades). Qualsevol dels següents gràfics podria ser vàlid:
+
+```{r, echo=FALSE, fig.width=6, fig.height=6}
+par(mfrow=c(2,2))
+barplot(tab2, beside = TRUE,  legend.text = rownames(tab2), ylim = c(0,1.3), args.legend = list(ncol=2, cex = 0.6))
+barplot(t(tab1), beside = TRUE, legend.text = colnames(tab2), ylim = c(0,1.3), args.legend = list(ncol=3, cex = 0.6))
+barplot(tab2, legend.text = rownames(tab2), ylim = c(0,1.5), args.legend = list(ncol=2, cex = 0.6))
+barplot(t(tab1), legend.text = colnames(tab2), ylim = c(0,1.5), args.legend = list(ncol=3, cex = 0.6))
 ```
 
-**Comentaris**
+* És important que les barres que es mostrin en el gràfic sumin 1 dins de cada categoria. Si les barres estan apilades és fàcil de veure (gràfics inferiors).
 
-* `r str_mode`
 
-#### 3. Feu una estadística descriptiva conjunta (numèrica i gràfica) de les variables __`r CAT_RND[2]`__ i __`r SPECIE1`__. _(1 punt)_
+# Sobre els pingüins d'Adèlia
 
-La descriptiva numèrica hauria de contenir, com a mínim, el nombre d'observacions, la mitjana, la desviació estàndard, els quartils (primer, mediana i tercer) per cada categoria.
-
-```{r}
-dades$var_cat = dades[[CAT_RND[2]]]
-dades$var = dades[[SPECIE1]]
-dades %>%
-  group_by(var_cat) %>%
-  summarise(
-    n = n(),
-    mitjana = mean(var),
-    sd = sd(var),
-    Q1 = quantile(var, 0.25),
-    mediana = median(var),
-    Q3 = quantile(var, 0.75)
-  ) %>%
-  knitr::kable(digits = 3)
+```{r, include=FALSE}
+penguins_adelie = penguins %>%
+  filter(species == 'Adelie')
 ```
 
-La descriptiva gràfica hauria de contenir un gràfic amb múltiples caixes de dispersió.
+* L'objectiu de l'apartat és comparar el pes dels pingüins Adelie en les tres illes.
+* Caldrà mostrar els estadístics numèrics de la variable pes dins de cada sexe.
 
-```{r}
-boxplot(var~var_cat, data= dades, xlab = CAT_RND[2], ylab = SPECIE1,
-        main = 'Caixes de dispersió múltiples')
+```{r, echo=FALSE, comment = " "}
+RcmdrMisc::numSummary(penguins_adelie[,"body_mass_g", drop=FALSE], groups=penguins_adelie$island, 
+  statistics=c("mean", "sd", "IQR", "quantiles"), quantiles=c(0,.25,.5,.75,1))
 ```
 
-**Comentaris**
+* També caldrà mostrar un gràfic on es compari el pes a les diferents illes. El gràfic més adequat és el gràfic de caixa.
 
-* Caldria comparar els resultats entre els diferents grups.
-
-
-#### 4. Crea una nova variable que prengui el valor 'alt' si __`r SPECIE1`__ és superior a 1, i 'baix' altrament. Feu un descriptiva conjunta (numèrica i gràfica) d'aquesta variable i la variable `ZoogD`. _(1.5 punt)_
-
-La descriptiva numèrica consta de diferents taules: taula de contingència i taules marginals. A continuació es detallen les diferents possibilitats.
-
-* Taula de contingència:
-
-    ```{r}
-    dades$var_bin = if_else(dades[[SPECIE1]] > 1, 'alt', 'baix')
-    dades$var_cat = dades[['ZoogD']]
-    tab = with(dades, table(var_bin, var_cat))
-    knitr::kable(tab)
-    # dades %>%
-    #   count(` `= var_bin, var_cat) %>%
-    #   pivot_wider(names_from = var_cat, values_from = n) %>%
-    #   knitr::kable()
-    ```
-
-* Taula de freqüències relatives
-
-```{r}
-kable(addmargins(100*prop.table(tab)), digits = 2)
+```{r, echo=FALSE, fig.width=5, fig.height=4}
+boxplot(body_mass_g~island, data = penguins, ylab = 'Pes')
 ```
 
-* Taula de les marginals fila
+menys adequat seria mostrar l'histograma dins de cada illa, on costa veure diferències:
 
-```{r}
-kable(addmargins(100*prop.table(tab, 1))[-(1+nrow(tab)),], digits = 2)
+```{r, echo=FALSE, fig.width=8, fig.height=3}
+par(mfrow=c(1,3))
+with(subset(penguins_adelie, island == 'Biscoe'), hist(body_mass_g, main= "Biscoe", xlab = "Pes", ylab = 'Freqüència'))
+with(subset(penguins_adelie, island == 'Dream'), hist(body_mass_g, main= "Dream", xlab = "Pes", ylab = ''))
+with(subset(penguins_adelie, island == 'Torgersen'), hist(body_mass_g, main= "Torgersen", xlab = "Pes", ylab = ''))
+par(mfrow=c(1,1))
 ```
 
-* Taula de les marginals columna
 
-```{r}
-kable(addmargins(100*prop.table(tab, 2))[,-(1+ncol(tab))], digits = 2)
-```
 
-Per la descriptiva gràfica tenim diferents opcions, algunes d'elles són:
-
-```{r, fig.show='hold', out.width="50%"}
-lattice::barchart(tab, auto.key = TRUE, main = 'Gràfic barres\nFreqüències absolutes (opció 1)')
-lattice::barchart(t(tab), auto.key = TRUE, main = 'Gràfic barres\nFreqüències absolutes (opció 2)')
-lattice::barchart(prop.table(tab, 1), auto.key = TRUE, main = 'Gràfic barres\nMarginals (opció 1)')
-lattice::barchart(t(prop.table(tab, 2)), auto.key = TRUE, main = 'Gràfic barres\nMarginals (opció 2)')
-```
-
-**Comentaris**
-
-* Cal comparar les categories i plantejar semblances o diferències.
-
-#### 5. Feu una estadística descriptiva conjunta (numèrica i gràfica) del logarítme (funció `log()` d'R) de la variable __`r SPECIE2`__ i la variable __`r NUM_RND[2]`__. _(1.5 punt)_
-
-```{r}
-dades$lvar1 = log(dades[[SPECIE2]])
-dades$var2 = dades[[NUM_RND[2]]]
-dades$lvar2 = log(dades[[NUM_RND[2]]])
-```
-
-Cal descriure de manera numèrica el logaritme de la variable `r SPECIE2` i la variable `r NUM_RND[2]` (o el del seu logaritme). A continuació es mostren les descriptives d'aquestes variables: 
-
-```{r}
-dades %>%
-  select(a = lvar1, b = var2, c = lvar2) %>%
-  pivot_longer(everything(), values_to = 'var') %>%
-  filter(is.finite(var)) %>%
-  group_by(name) %>%
-  summarise(
-    n = n(),
-    mitjana = mean(var),
-    sd = sd(var),
-    Q1 = quantile(var, 0.25),
-    mediana = median(var),
-    Q3 = quantile(var, 0.75)
-  ) %>%
-  mutate(name = c(paste0('log.', SPECIE2), NUM_RND[2], paste0('log.', NUM_RND[2]))) %>%
-  kable(digits = 3)
-
-dades_finite = dades %>%
-  select(lvar1, var2,lvar2) %>%
-  filter(is.finite(lvar2))
-```
-
-* La correlació entre el logaritme de la variable `r SPECIE2`, la variable `r NUM_RND[2]` és `r round(cor(dades$lvar1, dades$var2), 4)`.
-* La correlació entre el logaritme de la variable `r SPECIE2` i el logaritme de la variable `r NUM_RND[2]` és `r round(cor(dades_finite$lvar1, dades_finite$lvar2), 4)`.
-
-La descriptiva gràfica hauria de constar d'un gràfic de dispersió entre les dues variables. A continuació es mostren les dues opcions que s'admetrien com a correctes (logaritme de la variable `r SPECIE2` vs la variable `r NUM_RND[2]` o logaritme de la variable `r SPECIE2` vs logaritme de la variable `r NUM_RND[2]`).
-
-```{r, fig.show='hold', out.width="50%"}
-plot(lvar1~var2, data=dades, xlab = NUM_RND[2], ylab = paste0('log.', SPECIE2))
-plot(lvar1~lvar2, data=dades, xlab = paste0('log.', NUM_RND[2]), ylab = paste0('log.', SPECIE2))
-```
-
-**Comentaris**
-
-* Cal comentar la direcció i la magnitud de la correlació.
