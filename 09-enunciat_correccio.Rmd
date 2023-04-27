@@ -1,6 +1,9 @@
 ---
 title: "Dossier de correcció"
-output: html_document
+output:
+  html_document:
+    self_contained: yes
+    mode: selfcontained
 ---
 
 ```{r setup, include=FALSE}
@@ -46,23 +49,23 @@ id_tr = as.character(slice(treballs, 1)$id_tr)
 url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
 url_formulari = link_form(id, id_tr)
 url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/penguins_%s.xlsx", ID_COURSE, id_tr)
 url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
 __`r id_tr`__
 
-* Enllaç al treball a avaluar:
-`r sprintf("[%s](%s)", url_treball, url_treball)`
+* Treball a avaluar: [pdf](`r url_treball`)
 
-* Formulari de correcció del treball: 
-`r sprintf("[%s](%s)", url_formulari, url_formulari)`
 
-* Enunciat original del treball: 
-`r sprintf("[%s](%s)", url_enunciat, url_enunciat)`
+* Formulari de correcció del treball: [Google Forms](`r url_formulari`)
 
-* Solució proposada del treball: 
-`r sprintf("[%s](%s)", url_solucio, url_solucio)`
+
+* Enunciat original del treball i dades del treball: [pdf](`r url_enunciat`), [xlsx](`r url_dades`)
+
+
+* Solució proposada del treball: [pdf](`r url_solucio`)
 
 ### Treball 2 (`r treb2`)
 
@@ -71,23 +74,23 @@ id_tr = as.character(slice(treballs, 2)$id_tr)
 url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
 url_formulari = link_form(id, id_tr)
 url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/penguins_%s.xlsx", ID_COURSE, id_tr)
 url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
 __`r id_tr`__
 
-* Enllaç al treball a avaluar:
-`r sprintf("[%s](%s)", url_treball, url_treball)`
+* Treball a avaluar: [pdf](`r url_treball`)
 
-* Formulari de correcció del treball: 
-`r sprintf("[%s](%s)", url_formulari, url_formulari)`
 
-* Enunciat original del treball: 
-`r sprintf("[%s](%s)", url_enunciat, url_enunciat)`
+* Formulari de correcció del treball: [Google Forms](`r url_formulari`)
 
-* Solució proposada del treball: 
-`r sprintf("[%s](%s)", url_solucio, url_solucio)`
+
+* Enunciat original del treball i dades del treball: [pdf](`r url_enunciat`), [xlsx](`r url_dades`)
+
+
+* Solució proposada del treball: [pdf](`r url_solucio`)
 
 ### Treball 3 (`r treb3`)
 
@@ -96,20 +99,20 @@ id_tr = as.character(slice(treballs, 3)$id_tr)
 url_treball = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/treball_%s.pdf", ID_COURSE, id_tr)
 url_formulari = link_form(id, id_tr)
 url_enunciat = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/enunciat1_%s.pdf", ID_COURSE, id_tr)
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/penguins_%s.xlsx", ID_COURSE, id_tr)
 url_solucio = sprintf("https://moodle2.udg.edu/pluginfile.php/%d/mod_folder/content/0/solucio1_%s.pdf", ID_COURSE, id_tr)
 ```
 
 * Identitat del treball:
 __`r id_tr`__
 
-* Enllaç al treball a avaluar:
-`r sprintf("[%s](%s)", url_treball, url_treball)`
+* Treball a avaluar: [pdf](`r url_treball`)
 
-* Formulari de correcció del treball: 
-`r sprintf("[%s](%s)", url_formulari, url_formulari)`
 
-* Enunciat original del treball: 
-`r sprintf("[%s](%s)", url_enunciat, url_enunciat)`
+* Formulari de correcció del treball: [Google Forms](`r url_formulari`)
 
-* Solució proposada del treball: 
-`r sprintf("[%s](%s)", url_solucio, url_solucio)`
+
+* Enunciat original del treball i dades del treball: [pdf](`r url_enunciat`), [xlsx](`r url_dades`)
+
+
+* Solució proposada del treball: [pdf](`r url_solucio`)

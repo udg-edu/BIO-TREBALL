@@ -31,5 +31,8 @@ assignments %>%
   arrange(n) %>%
   count(n)
 
+### Manual modifications to 'assignments'
+
+
 save(assignments, file = '07-correccio.RData')
 
