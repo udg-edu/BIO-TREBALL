@@ -1,69 +1,113 @@
 ---
-title: "Treball Pràctic d'Estadística Aplicada"
+title: "Treball d'Estadística Aplicada (segona part)"
+output: 
+  pdf_document: 
+    extra_dependencies: wrapfig
+    toc: yes
+header-includes:
+  - \usepackage[catalan]{babel}
 ---
 
 ```{r setup, include=FALSE}
-library(tidyverse)
-knitr::opts_chunk$set(echo = FALSE)
-if(!exists('.ID')){
-  .ID = '2002963'
-}
-load(sprintf('04B-dades_aleatori/%s.RData', .ID))
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(lmtest)
+library(readxl)
+if(!exists(".ID")) .ID = '000000'
+penguins = read_excel( sprintf("05-enunciat/penguins_%s.xlsx", .ID))
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx", .ID)
 ```
 
-## LES DADES
+# El conjunt de dades `penguins`
 
-El conjunt de dades que utilitzarem conté les dades de les espècies de plantes alpines _`r SPECIE1.LONG`_  i _`r SPECIE2.LONG`_ observades a la zona de Lieu-dit Aravo, al municipi de Valloire (França). A 75 zones es va registrar l'abundància de les dues espècies i diferentes característiques de la zona mostrejada. 
+En aquesta segona part del treball, seguireu amb les mateixes dades que vau treballar en la primera part. Recordem:
 
-* `Site`: Identificador del lloc de mostreig.
-* ``r SPECIE1``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE1.LONG`_  a la zona mostrejada.
-* ``r SPECIE2``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE2.LONG`_  a la zona mostrejada.
-* `Slope`: Inclinació del terreny (en graus).
-* `Form`: Caracterització microtopogràfica de la forma del terreny en cinc categories: convex (_convexity_), pendent convex (_convex slope_), pendent accentuat (_right slope_), pendent còncau (_concave slope_), còncau (_concavity_).
-* `PhysD`: Pertorbació física. Percentatge de sòl sense vegetació a causa de processos físics.
-* `ZoogD`: Pertorbació zoogènica. Quantitat de sòl sense vegetació a causa de l'activitat de la marmota: no; alguns (_some_); alt (_high_).
+El conjunt `penguins` conté _vuit_ característiques de diferents espècies de pingüins. El nom de les columnes són:
+
+* `species`: Espècie del pingüí: [pingüí de Papua](https://ca.wikipedia.org/wiki/Ping%C3%BC%C3%AD_de_corona_blanca) ("Gentoo"), [pingüí d'Adèlia](https://ca.wikipedia.org/wiki/Ping%C3%BC%C3%AD_de_corona_blanca) ("Adelie") i [pingüí carablanc](https://ca.wikipedia.org/wiki/Ping%C3%BC%C3%AD_carablanc) ("Chinstrap").
+* `island`: illa on s'ha registrat l'exemplar: illes Biscoe, illa Dream i illa Torgersen.
+* `bill_length_mm`: llargada del bec en mil·límetres.
+* `bill_depth_mm`: profunditat del bec en mil·límetres.
+* `flipper_length_mm`: llargada de l'aleta en mil·límetres.
+* `body_mass_g`: pes en grams.
+* `sex`: sexe del pingüí.
+* `year`: any que s'ha registrat.
+
+Trobareu el conjunt de dades a l'arxiu `penguins_`r .ID`.xlsx` a: 
+
+<`r url_dades`>
+
+Si no us funciona l'enllaç, també trobareu l'arxiu de dades al llistat de grups del Moodle.
+
+
+Aquesta segona part haurà de contenir els següents apartats.
+
+* __Sobre el bec dels pingüins__: inferència sobre una relació dels becs dels pingüins
+* __Sobre el sexe dels pingüins__: inferència sobre la relació del sexe amb altres característiques dels pingüins.
+* __Sobre els pingüins d'Adèlia__:  inferència sobre el pes dels pingüins d'Adèlia trobats en diferents zones.
+
+A continuació es detalla què cal fer en cadascun d'aquests apartats.
+
+## Sobre el bec dels pingüins
+
+En el nostre conjunt de dades hem observat que la llargada del bec és aproximadament 2.5 vegades més gran que la profunditat del bec. Utilitzant les eines inferencials vistes a classe, voldríem veure si aquesta hipòtesi és plausible.
+
+<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de la variable `difference`, mesurar la plausibilitat de la hipotesis o bé a través d'una contrast d'hipotesis o bé a través d'un interval de confiança.</p>
+
+
+## Sobre el sexe dels pingüins
+
+Hem observat que el sexe dels pingüins no sembla aportar gaire informació sobre l'animal ni la mostra recollida. Ens hem plantejat tres hipòtesis sobre característiques de la zona mostrejada que voldríem analitzar:
+
+1. La proporció de pingüins mascle i femella a la zona és semblant.
+1. La profunditat del bec és semblant en funció del sexe del pingüí.
+1. La distribució del sexe dels pingüins és independent de l'espècie.
+
+<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de les variables implicades en cada apartat, defensar mitjançant estadística descriptiva (numèrica i gràfica) la certesa de cada una de les hipòtesis plantejades. Si voleu, en el vostre treball, podeu dividir les tres hipotesis en tres subapartats</p>
+
+## Sobre els pingüins d'Adèlia
+
+\begin{wrapfigure}{l}{0.25\textwidth}
+\includegraphics[width=0.9\linewidth]{adelie.jpg} 
+\end{wrapfigure}
+
+En aquest apartat únicament considerarem els pingüins d'Adèlia (`species == 'Adelie'`). Per això, primerament filtrem el conjunt dades. Això ho podem fer de la següent manera:
+
+- Aneu al menú _Dades->Taula de dades activa->Fes un subconjunt de la taula de dades activa_.
+- Seleccioneu l'opció per defecte "Inclou totes les variables".
+- A _Expressió de selecció_ poseu: `species == 'Adelie'`.
+- A _Nom de la nova taula de dades_ poseu el nom de la nova taula, per exemple: `penguins_adelie`.
 
 ```{r, include=FALSE}
-url = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/%s.xlsx", .ID)
+penguins_adelie = penguins %>%
+  filter(species == 'Adelie')
 ```
 
-El conjunt de dades el trobareu disponible en format Excel a [`r url`](`r url`).
+Si ho heu fet bé, obtindreu una nova taula anomenada `penguins_adelie` amb els `r nrow(penguins_adelie)` pingüins de l'espècie Adelie.
 
-## MOLT IMPORTANT: INSTRUCCIONS 
+Aquest tipus de pingüí ha estat observat a diferents illes (`island`). Voldríem veure si el pes dels animals és similar en les diferents illes. 
 
-__SI NO SEGUEIXES AQUESTES INSTRUCCIONS, POT SER QUE OBTINGUIS UN 0 A LA NOTA DEL TREBALL.__
+<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de les variables implicades, defensar mitjançant estadística descriptiva (numèrica i gràfica) la certesa de la hipòtesi plantejada.</p>
 
-* __És un treball on s’han de mostrar l’assoliment dels continguts, procediments i mètodes de l’assignatura__.
-* El treball que presenteu ha de ser __anònim__. El vostre nom no hi pot aparèixer, únicament pot aparèixer-hi el codi UdG del grup.
-* Cal __raonar__ els __resultats__ i les __passes seguides__ per aconseguir-los. 
-* Feu una __captura de pantalla__ amb el menú i els camps que heu utilitzat. 
-* Incorporeu només les sortides numèriques i gràfiques d’R __que creieu indispensables acompanyades sempre d’una explicació/valoració__. No es valoraran els apartats que es limitin a copiar sortides d’R. 
-* Es valorarà molt positivament __la claredat i la concisió__ en la presentació de resultats. 
-* Com en tots els treballs de la carrera, en cada lliurament hi haurà d’haver un apartat introductori i un de conclusions. No cal incorporar un apartat de bibliografia.
-
-> Aquest treball pràctic està dividit en dues parts. Cadascuna de les parts té un termini de lliurament i s’ha de __lliurar a través del mòdul de Recollida de treballs i pràctiques del moodle__. No s’acceptaran els treballs pràctics que es lliurin fora del termini. 
->
-> __MOLT IMPORTANT: cada una de les parts del treball s’han de lliurar en un arxiu pdf. No s'acceptaran treballs amb cap altre format.__
+</div>
 
 \newpage
 
-## LLIURAMENT 2 (30 de maig)
+# Termini i instruccions d'entrega
 
-> Tingues en compte el següent:
->
-> * Sempre que facis un contrast, deixa clares la hipòtesi nul·la i l'alternativa. 
-> * Detalla sempre totes les assumpcions, i si no es compleixen, indica-ho i segueix amb el procés d'inferència que estiguis considerant.
-> * Sempre que puguis, utilitza el contrast que tinguin més potència.
+La primera part del treball s'ha de presentar el dia __28 de maig__ a través de Moodle. Trobareu l'entrega dins l'apartat "TREBALL".
 
-1. Dòna un interval del `r sprintf("%0.f%%", 100*CONF_LEVEL[1])` de confiança de la mitjana poblacional de la variable  __`r NUM_RND[1]`__. _(0.5 punt)_ 
+__Si no seguiu aquestes instruccions, pot ser que obtinguis un zero a la nota del treball.__
 
-2. Decideix si veus raonable pensar que és igual de probable observar cada una de les categòries de la variable __`r CAT_RND[1]`__. _(0.5 punt)_
+* És un treball on s’han de mostrar l’assoliment dels continguts, procediments i mètodes de l’assignatura.
+* El treball que presenteu ha de ser anònim. El vostre nom no hi pot aparèixer, únicament pot aparèixer-hi el codi UdG de les persones del grup.
+* Cal raonar els resultats i les passes seguides per aconseguir-los.
+* Si ho trobeu convenient, feu una captura de pantalla amb el menú i els camps que heu utilitzat.
+* Incorporeu només les sortides numèriques i gràfiques d’R que creieu indispensables acompanyades sempre d’una explicació/valoració. __No es valoraran els apartats que es limitin a copiar sortides d’R.__
+* Es valorarà molt positivament la claredat i la concisió en la presentació de resultats.
+* Aquest treball pràctic s’ha de lliurar a través del mòdul de Recollida de treballs i pràctiques del Moodle. No s’acceptaran els treballs pràctics que es lliurin fora del termini.
 
-3. Creus que existeixen evidències per pensar que la mitjana poblacional de la variable __`r SPECIE1`__ difereix entre les categòries de la variable __`r CAT_RND[2]`?__. _(0.75 punt)_
-
-4. Crea una nova variable que prengui el valor 'alt' si __`r SPECIE1`__ és superior a 1, i 'baix' altrament. Creus que el valor d'aquesta nova variables és independent de la variable `ZoogD`? _(1.5 punt)_
-
-5. Creus que en mitjana existeixen diferencies entre les taxes de l'abundància de l'espècie __`r SPECIE1`__ i l'espècie __`r SPECIE2`__? _(0.75 punt)_
-
-6. Crea una nova variable definida pel logaritme (funció `log()` d'R) del quocient entre les taxes de les dues espècies: __`r SPECIE1`__ i __`r SPECIE2`__ ( ``r sprintf("log(%s/%s)", SPECIE1, SPECIE2)`` ). Fixeu-vos que aquest logquocient ens indica quina és l'abundància de l'espècie __`r SPECIE1`__ respecte l'abundància de l'espècie __`r SPECIE2`__. Decideix si aquesta variable que acabes de crear és, en mitjana, diferent de zero. Independentment del que t'hagi sortit, explica quina seria la interpretació que donaries si obtinguessis que, en mitjana, la variable creada és diferent de zero?  _(1 punt)_
+__Molt important__: cada una de les parts del treball s’han de lliurar en un arxiu pdf. __No s’acceptaran treballs amb cap altre format.__
 

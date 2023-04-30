@@ -31,8 +31,8 @@ assignments %>%
   arrange(n) %>%
   count(n)
 
-### Manual modifications to 'assignments'
-
+### Manual modifications to 'assignments' if necessary
+if(exists('07-correccio-manual.R')) source('07-correccio-manual.R')
 
 save(assignments, file = '07-correccio.RData')
 

@@ -48,7 +48,7 @@ dades/diamants-SEED_%.RData : build_data.R
 08B-solucio/solucio2_%.pdf : 08B-solucio.Rmd 04B-dades_aleatori/%.RData 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
-09-enunciat_correccio/enunciat_cor1_%.html : 09-enunciat_correccio.Rmd 07-correccio.RData
+09-enunciat_correccio/enunciat_cor1_%.html : 09-enunciat_correccio.Rmd 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
 09B-enunciat_correccio/enunciat_cor2_%.pdf : 09B-enunciat_correccio.Rmd 07B-correccio.RData
