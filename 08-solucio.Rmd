@@ -212,7 +212,7 @@ RcmdrMisc::numSummary(penguins_adelie[,"body_mass_g", drop=FALSE], groups=pengui
 * També caldrà mostrar un gràfic on es compari el pes a les diferents illes. El gràfic més adequat és el gràfic de caixa.
 
 ```{r, echo=FALSE, fig.width=5, fig.height=4}
-boxplot(body_mass_g~island, data = penguins, ylab = 'Pes')
+boxplot(body_mass_g~island, data = penguins_adelie, ylab = 'Pes')
 ```
 
 menys adequat seria mostrar l'histograma dins de cada illa, on costa veure diferències:
