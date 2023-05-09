@@ -24,7 +24,7 @@ n.2 = replace_na(n.2, 1000)
 notes_finals %>%
   mutate(N.2 = n.2) %>%
   datatable(escape = FALSE, options = list(
-    pageLength = -1, dom = 'ft',
+    pageLength = -1, dom = 'ft', ordering=F,
     columnDefs = list(list(visible=FALSE, targets='N.2')))) %>%
   formatStyle("Correcció (1.5)", 
               valueColumns = "N.2", fontWeight = 'bold',
