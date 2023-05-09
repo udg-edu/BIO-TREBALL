@@ -169,6 +169,7 @@ save.image(file = '10-avaluacio.RData')
 
 load(file = '10-avaluacio.RData')
 
+writexl::write_xlsx(notes_finals, path = 'avaluacio_1.xlsx')
 
 rmarkdown::render("10-avaluacio.Rmd", output_file = "docs/2022/avaluacio_1.html")
 
