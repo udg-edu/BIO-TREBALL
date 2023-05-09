@@ -144,7 +144,7 @@ dnotes_treballs  = dpuntuacions %>%
     p3c = (p3c_1 + p3c_2 + 2 * p3c_3) / 4,
     p4 = (2 * p4_1 + p4_2 + p4_3)/4) %>%
   bind_rows(dpuntuacions_manual) %>%
-  mutate(nota_treball = p1 + 2 * p2 + p3a + p3b + p3c + 2 * p4)
+  mutate(nota_treball = 1.5 * p1 + 2 * p2 + p3a + p3b + p3c + 2 * p4)
 
 dnotes_individuals = dassignments %>%
   distinct(id, id_group) %>%
@@ -155,15 +155,15 @@ dnotes_individuals = dassignments %>%
   left_join(dcorr_individual_nota, by = 'id') %>%
   arrange(desc(nota_treball)) %>%
   mutate(
-    nota_final = (nota_treball + 2 * (3 - no_corr)/3),
+    nota_correccio = 0.5 * (3 - no_corr),
+    nota_final = nota_treball + nota_correccio,
     nota_final_round = ceiling(2*nota_final)/2
   )
 
 
 notes_finals = dnotes_individuals %>%
   arrange(id) %>%
-  mutate(corr = 2-2*no_corr/3) %>%
-  select(id, p1:p4, `Treball (8)` = nota_treball, `Correcció (2)` = corr, `Nota final` = nota_final_round)
+  select(id, p1:p4, `Treball (8.5)` = nota_treball, `Correcció (1.5)` = nota_correccio, `Nota final` = nota_final_round)
 
 save.image(file = '10-avaluacio.RData')
 
