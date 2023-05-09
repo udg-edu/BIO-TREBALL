@@ -26,7 +26,7 @@ notes_finals %>%
   datatable(escape = FALSE, options = list(
     pageLength = -1, dom = 'ft',
     columnDefs = list(list(visible=FALSE, targets='N.2')))) %>%
-  formatStyle("Correcció (2)", 
+  formatStyle("Correcció (1.5)", 
               valueColumns = "N.2", fontWeight = 'bold',
               color = styleEqual(c(1000, vcuts),
                                           c('black', colfunc(length(vcuts))))
