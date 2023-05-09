@@ -1,32 +1,37 @@
 library(tidyverse)
 library(googlesheets4)
-corr_file = "https://docs.google.com/spreadsheets/d/15CVm6tEYM6FN6kucXDn5A4SnxEKaEdP-mIqDH5BPZRo/edit?usp=sharing"
+corr_file = "https://docs.google.com/spreadsheets/d/1GW4HxFa5LC0RNSzC9AaauT6a0BxcULquOcBxs1OyiD4/edit?usp=sharing"
+gs4_deauth()
 corr0 = read_sheet(corr_file)
-
+names(corr0)
 corr = corr0 %>%
   transmute(
     hora = `Timestamp`,
     id = unlist(`El teu codi d'estudiant (amb la \"u\" inicial)`),
     id = if_else(str_starts(id, 'u'), id, str_c('u', id)),
-    id_treb = unlist(`Posa el codi del treball que estàs corregint (sense la \"u\" inicial)`),
+    id_treb = unlist(`El nom del grup del treball que estàs corregint (posa el nom del grup en minúscula)`),
     id_treb = if_else(str_starts(id_treb, 'u'), str_sub(id_treb, 2, -1), id_treb),
-    p1 = `Marca en cas afirmatiu...4`,
-    p2 = `Marca en cas afirmatiu...5`,
-    p3 = `Marca en cas afirmatiu...6`,
-    p4 = `Marca en cas afirmatiu...7`,
-    p5 = `Marca en cas afirmatiu...8`,
-    pg = `Marca en cas afirmatiu...9`,
-    nota = `De 0 a 10, com valoraries la claredat i la concisió en la presentació de resultats`)
+    p1 = `Marca en cas afirmatiu. Si la pregunta no aplica, no marqueu la casella....4`,
+    p2 = `Marca en cas afirmatiu. Si la pregunta no aplica, no marqueu la casella....6`,
+    p3a = `La proporció de pingüins mascle i femella és la mateixa.`,
+    p3b = `La profunditat del bec és la mateixa en funció del sexe del pingüí.`,
+    p3c = `La distribució del sexe dels pingüins és la mateixa en funció de l’espècie.`,
+    p4 = `Marca en cas afirmatiu. Si la pregunta no aplica, no marqueu la casella....12`,
+    pg = `Marca si creus que aplica.`,
+    nota = `De manera subjectiva, com puntuaries del 0 al 10 el treball corregit.`)
+
+# > corr
+# # A tibble: 949 × 11
 
 corr_alumnes = corr %>%
   filter(sapply(id_treb, is.character)) %>%
   mutate(id_treb = unlist(id_treb)) %>%
   group_by(id, id_treb) %>%
-  slice_max(hora) %>%
+  slice_max(hora) %>% # Per cada corrector i treball s'agafa la darrera correcció
   ungroup() %>%
   arrange(id, hora)
 
-dcorr_alumnes = lapply(0:10, function(i)
+dcorr_alumnes = lapply(1:10, function(i)
   corr_alumnes %>%
     select(p1:pg) %>%
     mutate_all(~replace_na(.x, "")) %>%
@@ -47,6 +52,7 @@ if(length(args) > 0){
 
 load('07-correccio.RData')
 dassignments = assignments %>%
+  select(id, id_group, treb1:treb3) %>%
   mutate(id_group = as.character(id_group)) %>%
   pivot_longer(treb1:treb3, values_to = 'id_treb', values_transform = as.character)
 
@@ -60,36 +66,60 @@ dcorr_alumnes = dassignments %>%
   right_join(dcorr_alumnes, by = c('id', 'id_treb')) %>%
   arrange(id_treb, id)
 
+TREBALLS_INCORRECTES = c('slowpoke')
 dcorr_alumnes_no_fetes = dassignments %>%
   select(id_treb, id) %>%
   anti_join(dcorr_alumnes, by = c('id', 'id_treb')) %>%
+  group_by(id) %>%
+  filter(!(id_treb %in% TREBALLS_INCORRECTES & 
+             n() == sum(id_treb %in% TREBALLS_INCORRECTES))) %>% # si un treball no es correcte no es té en compte si és l'únic
+  ungroup() %>%
   count(id, name = 'no_corr')
 
 ############ PUNTUACIó
-dcorr_individual = dcorr_alumnes %>%
-  pivot_longer(p1_0:p5_5) %>%
+dcorr_individual_preguntes = dcorr_alumnes %>%
+  filter(!id_treb %in% TREBALLS_INCORRECTES) %>%
+  pivot_longer(p1_1:p4_3) %>%
   group_by(id_treb, name) %>%
-  mutate(n = n(),
-         n1 = sum(value),
-         n2 = sapply(1:n(), function(i) sum(value[-i]))) %>%
-  filter(n >= 7, n1 + 2 >= n, n1 == n2) %>%
-  ungroup()
+  mutate(correc = n(),
+         p.global = mean(value),
+         p.invidi = value,
+         p.diff = correc * abs(p.global - p.invidi)) %>%
+  ungroup() %>%
+  arrange(desc(p.diff), id)
 
-daleatori = dcorr_individual %>%
-  count(id) %>%
-  arrange(desc(n)) %>%
-  filter(n > 20)
+dcorr_individual_preguntes_summ = dcorr_individual_preguntes %>%
+  group_by(id) %>%
+  summarise(
+    n.1 = sum(p.diff + 1 == correc),
+    n.2 = sum(p.diff + 2 >= correc),
+    n.3 = sum(p.diff + 3 >= correc)
+  ) %>%
+  arrange(desc(n.2))
 
-left_join(daleatori, dcorr_individual, by = 'id') %>%
-  select(id, pregunta = name, marcat = value) %>%
-  mutate(pregunta = sprintf("Pregunta %s, ítem %s", str_sub(pregunta, 2, 2), str_sub(pregunta, -1, -1)))
+dcorr_individual_nota = dcorr_alumnes %>%
+  filter(!id_treb %in% TREBALLS_INCORRECTES) %>%
+  select(id_treb, id, nota) %>%
+  arrange(id) %>%
+  group_by(id_treb) %>%
+  mutate(nota.m = median(nota),
+         nota.diff = abs(nota - nota.m)) %>%
+  group_by(id) %>%
+  summarise(nota.diff = mean(nota.diff)) %>%
+  arrange(desc(nota.diff), id)
 
-
-
-
+# daleatori = dcorr_individual %>%
+#   count(id) %>%
+#   arrange(desc(n)) %>%
+#   filter(n > 20)
+# 
+# left_join(daleatori, dcorr_individual, by = 'id') %>%
+#   select(id, pregunta = name, marcat = value) %>%
+#   mutate(pregunta = sprintf("Pregunta %s, ítem %s", str_sub(pregunta, 2, 2), str_sub(pregunta, -1, -1)))
 
 dpuntuacions = dcorr_alumnes %>%
-  pivot_longer(nota:pg_3) %>%
+  filter(!id_treb %in% TREBALLS_INCORRECTES) %>%
+  pivot_longer(nota:p4_3) %>%
   group_by(id_treb, name) %>%
   summarise(value = median(value)) %>%
   pivot_wider(names_from = name, values_from = value)
@@ -98,42 +128,47 @@ in_01_range = function(x){
   pmax(pmin(x, 1), 0)
 }
   
-  
-dnotes_treballs = dpuntuacions %>%
+
+
+dpuntuacions_manual = bind_rows(
+  tibble(id_treb = "rapidash", p1 = 0.5, p2 = 1, p3a = 0.5, p3b = 1, p3c = 1, p4 = 1),
+  tibble(id_treb = "slowpoke", p1 = 0.5, p2 = 1, p3a = 1, p3b = 1, p3c = 0.75, p4 = 1))
+
+dnotes_treballs  = dpuntuacions %>%
   transmute(
     id_treb,
-    p1 = in_01_range(-0.25 * (1-p1_0) + 0.25 * p1_1 + 0.25 * p1_2 + 0.25 * p1_3 + 0.1 * p1_4 + 0.25 * p1_5),
-    p2 = in_01_range(-0.25 * (1-p2_0) + 0.2 * p2_1 + 0.2 * p2_2 + 0.2 * p2_3 + 0.2 * p2_4 + 0.2 * p2_5),
-    p3 = in_01_range(-0.25 * (1-p3_0) + 0.25 * p3_1 + 0.25 * p3_2 + 0.25 * p3_3 + 0.25 * p3_4),
-    p4 = in_01_range(-0.25 * (1-p4_0) + (p4_1 + p4_2 + p4_3 + p4_4 + p4_5 + p4_6)/6),
-    p5 = in_01_range(-0.25 * (1-p5_0) + (p5_1 + p5_2 + p5_3 + p5_4 + p5_5)/5),
-    intro = pg_1,
-    raonament = pg_2,
-    anonim = pg_3,
-    nota_treball = 0.5 * p1 + 0.5 * p2 + p3 + 1.5 * p4 + 1.5 * p5 - 0.25 * (1-intro) - 0.25 * (1-raonament) - 0.25 * (1-anonim)
-  )  %>%
-  arrange(nota_treball)
+    p1 = (p1_2 + 1) * (p1_3 + p1_4 + 2 * p1_5) / 8,
+    p2 = (p2_1 + 1) * (p2_2 + p2_3 + 2 * p2_4) / 8,
+    p3a = (p3a_1 + p3a_2 + 2 * p3a_3) / 4,
+    p3b = (p3b_1 + p3b_2 + 2 * p3b_3) / 4,
+    p3c = (p3c_1 + p3c_2 + 2 * p3c_3) / 4,
+    p4 = (2 * p4_1 + p4_2 + p4_3)/4) %>%
+  bind_rows(dpuntuacions_manual) %>%
+  mutate(nota_treball = p1 + 2 * p2 + p3a + p3b + p3c + 2 * p4)
 
 dnotes_individuals = dassignments %>%
-  distinct(id, id_treb = id_group) %>%
-  left_join(dnotes_treballs, by = 'id_treb') %>%
+  distinct(id, id_group) %>%
+  inner_join(dnotes_treballs, by = c('id_group' = 'id_treb')) %>%
   left_join(dcorr_alumnes_no_fetes, by = 'id') %>%
   replace_na(list(no_corr = 0L)) %>%
+  left_join(dcorr_individual_preguntes_summ, by = 'id') %>%
+  left_join(dcorr_individual_nota, by = 'id') %>%
+  arrange(desc(nota_treball)) %>%
   mutate(
-    naleatori = as.integer(id %in% daleatori$id),
-    no_corr = pmax(no_corr, naleatori * 3),
-    nota_treball_2 = nota_treball - 0.25 * no_corr)
+    nota_final = (nota_treball + 2 * (3 - no_corr)/3),
+    nota_final_round = ceiling(2*nota_final)/2
+  )
 
-filter(dnotes_individuals, naleatori == 1)
 
 notes_finals = dnotes_individuals %>%
   arrange(id) %>%
-  select(id, p1:anonim, `treballs no corregits o mal corregits` = no_corr, `Nota treball` = nota_treball_2)
+  mutate(corr = 2-2*no_corr/3) %>%
+  select(id, p1:p4, `Treball (8)` = nota_treball, `Correcció (2)` = corr, `Nota final` = nota_final_round)
 
 save.image(file = '10-avaluacio.RData')
 
 load(file = '10-avaluacio.RData')
 
 
-rmarkdown::render("10-avaluacio.Rmd", output_file = "docs/2021/avaluacio_1.html")
+rmarkdown::render("10-avaluacio.Rmd", output_file = "docs/2022/avaluacio_1.html")
 

@@ -15,7 +15,7 @@ library(readr)
 library(ggplot2)
 library(lmtest)
 library(readxl)
-if(!exists(".ID")) .ID = '000000'
+if(!exists(".ID")) .ID = '2002963'
 penguins = read_excel( sprintf("05-enunciat/penguins_%s.xlsx", .ID))
 url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx", .ID)
 ```
@@ -54,7 +54,7 @@ A continuació es detalla què cal fer en cadascun d'aquests apartats.
 
 En el nostre conjunt de dades hem observat que la llargada del bec és aproximadament 2.5 vegades més gran que la profunditat del bec. Utilitzant les eines inferencials vistes a classe, voldríem veure si aquesta hipòtesi és plausible.
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de la variable `difference`, mesurar la plausibilitat de la hipotesis o bé a través d'una contrast d'hipotesis o bé a través d'un interval de confiança.</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: O bé a través d'una contrast d'hipotesis o bé a través d'un interval de confiança, mesurar la plausibilitat de la hipotesis.</p>
 
 
 ## Sobre el sexe dels pingüins
@@ -65,7 +65,7 @@ Hem observat que el sexe dels pingüins no sembla aportar gaire informació sobr
 1. La profunditat del bec és semblant en funció del sexe del pingüí.
 1. La distribució del sexe dels pingüins és independent de l'espècie.
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de les variables implicades en cada apartat, defensar mitjançant estadística descriptiva (numèrica i gràfica) la certesa de cada una de les hipòtesis plantejades. Si voleu, en el vostre treball, podeu dividir les tres hipotesis en tres subapartats</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipotesi que permeti respondre cada una de les hipotesis, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
 
 ## Sobre els pingüins d'Adèlia
 
@@ -89,7 +89,7 @@ Si ho heu fet bé, obtindreu una nova taula anomenada `penguins_adelie` amb els 
 
 Aquest tipus de pingüí ha estat observat a diferents illes (`island`). Voldríem veure si el pes dels animals és similar en les diferents illes. 
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: a partir de les variables implicades, defensar mitjançant estadística descriptiva (numèrica i gràfica) la certesa de la hipòtesi plantejada.</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipotesi que permeti respondre la hipotesi plantejada, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
 
 </div>
 

@@ -5,6 +5,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(DT)
 library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
 load('10-avaluacio.RData')
@@ -12,5 +13,5 @@ load('10-avaluacio.RData')
 
 ```{r, echo=FALSE}
 notes_finals %>%
-  knitr::kable()
+  datatable(escape = FALSE, options = list(pageLength = -1, dom = 'ft'))
 ```
