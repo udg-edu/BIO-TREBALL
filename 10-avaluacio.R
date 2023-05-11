@@ -129,6 +129,18 @@ in_01_range = function(x){
 }
   
 
+dpuntuacions = dpuntuacions %>%
+  filter(id_treb != 'squirtle') %>%
+  bind_rows(
+    tibble(id_treb = 'squirtle', nota = 2,
+           p1_1 = 1, p1_2 = 1, p1_3 = 1, p1_4 = 1, p1_5 = 0,
+           p2_1 = 1, p2_2 = 0, p2_3 = 1, p2_4 = 1,
+           p3a_1 = 0, p3a_2 = 0, p3a_3 = 0,
+           p3b_1 = 1, p3b_2 = 1, p3b_3 = 1,
+           p3c_1 = 0, p3c_2 = 0, p3c_3 = 1,
+           p4_1 = 1, p4_2 = 1, p4_3 = 1)
+  ) 
+
 
 dpuntuacions_manual = bind_rows(
   tibble(id_treb = "rapidash", p1 = 0.5, p2 = 1, p3a = 0.5, p3b = 1, p3c = 1, p4 = 1),
