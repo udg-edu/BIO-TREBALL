@@ -4,7 +4,7 @@ ID_GROUP = $(shell cat udg_codis_grup.txt)
 ID_CORRECTOR = $(shell cat udg_codis_correctors.txt)
 ID_TREBALLS = $(shell cat codis_treballs.txt)
 
-ID_GROUP2 = $(shell cat udg_codis_grupB.txt)
+ID_GROUP2 = $(shell cat udg_codis_grup.txt)
 ID_CORRECTOR2 = $(shell cat udg_codis_correctors_B.txt)
 ID_TREBALLS2 = $(shell cat codis_treballs_B.txt)
 
@@ -15,12 +15,12 @@ SOLS = $(foreach id_group,$(ID_GROUP),$(shell printf '08-solucio/solucio1_%s.pdf
 CORR = $(foreach id_group,$(ID_CORRECTOR),$(shell printf '09-enunciat_correccio/enunciat_cor1_%s.html' $(id_group)))
 
 SOLS2 = $(foreach id_group,$(ID_TREBALLS2),$(shell printf '08B-solucio/solucio2_%s.pdf' $(id_group)))
-DOCS2 = $(foreach id_group,$(ID_GROUP2),$(shell printf '05-enunciat/enunciat2_%s.pdf' $(id_group)))
+DOCS2 = $(foreach id_group,$(ID_GROUP2),$(shell printf '05b-enunciat/enunciat2_%s.pdf' $(id_group)))
 DADES2 = $(foreach id_group,$(ID_GROUP2),$(shell printf '04B-dades_aleatori/%s.RData' $(id_group))) 
 CORR2 = $(foreach id_group,$(ID_CORRECTOR2),$(shell printf '09B-enunciat_correccio/enunciat_cor2_%s.pdf' $(id_group)))
 
 all: 03-dades.RData \
-     $(DADES) $(DOCS) $(SOLS) $(CORR) # $(DADES2) $(DOCS2) $(SOLS2) $(CORR2)
+     $(DADES) $(DOCS) $(SOLS) $(CORR) $(DOCS2) # $(DADES2)  $(SOLS2) $(CORR2)
 
 #  $(DOCS_TEMP)
 
@@ -39,7 +39,7 @@ dades/diamants-SEED_%.RData : build_data.R
 05-enunciat/enunciat1_%.pdf : 05-enunciat.Rmd 04-dades_aleatori/%.RData 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
-05-enunciat/enunciat2_%.pdf : 05B-enunciat.Rmd 04B-dades_aleatori/%.RData 
+05b-enunciat/enunciat2_%.pdf : 05B-enunciat.Rmd 04-dades_aleatori/%.RData 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
 08-solucio/solucio1_%.pdf : 08-solucio.Rmd 04-dades_aleatori/%.RData 

@@ -54,7 +54,7 @@ A continuació es detalla què cal fer en cadascun d'aquests apartats.
 
 En el nostre conjunt de dades hem observat que la llargada del bec és aproximadament 2.5 vegades més gran que la profunditat del bec. Utilitzant les eines inferencials vistes a classe, voldríem veure si aquesta hipòtesi és plausible.
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: O bé a través d'una contrast d'hipotesis o bé a través d'un interval de confiança, mesurar la plausibilitat de la hipotesis.</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: O bé a través d'un contrast d'hipòtesi o bé a través d'un interval de confiança, mesurar la plausibilitat de la hipòtesi plantejada.</p>
 
 
 ## Sobre el sexe dels pingüins
@@ -65,7 +65,7 @@ Hem observat que el sexe dels pingüins no sembla aportar gaire informació sobr
 1. La profunditat del bec és semblant en funció del sexe del pingüí.
 1. La distribució del sexe dels pingüins és independent de l'espècie.
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipotesi que permeti respondre cada una de les hipotesis, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipòtesi que permeti respondre les preguntes plantejades, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
 
 ## Sobre els pingüins d'Adèlia
 
@@ -89,7 +89,7 @@ Si ho heu fet bé, obtindreu una nova taula anomenada `penguins_adelie` amb els 
 
 Aquest tipus de pingüí ha estat observat a diferents illes (`island`). Voldríem veure si el pes dels animals és similar en les diferents illes. 
 
-<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipotesi que permeti respondre la hipotesi plantejada, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
+<p style="color:blue;">__Objectiu d'aquest apartat__: plantejar el contrast d'hipòtesi que permeti respondre la pregunta plantejada, i resoldre'l utilitzant el test més adequat entre els que hem vist a l'assignatura.</p>
 
 </div>
 
@@ -106,6 +106,7 @@ __Si no seguiu aquestes instruccions, pot ser que obtinguis un zero a la nota de
 * Cal raonar els resultats i les passes seguides per aconseguir-los.
 * Si ho trobeu convenient, feu una captura de pantalla amb el menú i els camps que heu utilitzat.
 * Incorporeu només les sortides numèriques i gràfiques d’R que creieu indispensables acompanyades sempre d’una explicació/valoració. __No es valoraran els apartats que es limitin a copiar sortides d’R.__
+* Afegiu les hipòtesis nul·la i alternativa de tots els contrasts que plantegeu.
 * Es valorarà molt positivament la claredat i la concisió en la presentació de resultats.
 * Aquest treball pràctic s’ha de lliurar a través del mòdul de Recollida de treballs i pràctiques del Moodle. No s’acceptaran els treballs pràctics que es lliurin fora del termini.
 
