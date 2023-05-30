@@ -1,10 +1,11 @@
 ---
-title: "Treballs entregats i membres del grup"
+title: "Treballs entregats"
 date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(DT)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -12,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 correctors %>%
   group_by(`ID grup` = id_group) %>%
   summarise(.groups = 'drop', `ID membres` = paste(id, collapse=',')) %>%
-  mutate(`ID grup` = sprintf("[%s](https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/treball_2_%s.pdf)", `ID grup`, `ID grup`)) %>%
-  knitr::kable()
+  mutate(`ID grup` = sprintf('<a  target=_blank href="https://moodle2.udg.edu/pluginfile.php/%s/mod_folder/content/0/treball_2_%s.pdf">%s</a>', 
+                             ID_COURSE, `ID grup`, `ID grup`)) %>%
+  datatable(escape = FALSE, options = list(pageLength = -1, dom = 'ft'))
 ```
