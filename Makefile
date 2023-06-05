@@ -17,10 +17,10 @@ CORR = $(foreach id_group,$(ID_CORRECTOR),$(shell printf '09-enunciat_correccio/
 SOLS2 = $(foreach id_group,$(ID_TREBALLS2),$(shell printf '08B-solucio/solucio2_%s.pdf' $(id_group)))
 DOCS2 = $(foreach id_group,$(ID_GROUP2),$(shell printf '05b-enunciat/enunciat2_%s.pdf' $(id_group)))
 DADES2 = $(foreach id_group,$(ID_GROUP2),$(shell printf '04B-dades_aleatori/%s.RData' $(id_group))) 
-CORR2 = $(foreach id_group,$(ID_CORRECTOR2),$(shell printf '09B-enunciat_correccio/enunciat_cor2_%s.pdf' $(id_group)))
+CORR2 = $(foreach id_group,$(ID_CORRECTOR2),$(shell printf '09B-enunciat_correccio/enunciat_cor2_%s.html' $(id_group)))
 
 all: 03-dades.RData \
-     $(DADES) $(DOCS) $(SOLS) $(CORR) $(DOCS2) # $(DADES2)  $(SOLS2) $(CORR2)
+     $(DADES) $(DOCS) $(SOLS) $(CORR) $(DOCS2) $(SOLS2) $(CORR2) # $(DADES2)   
 
 #  $(DOCS_TEMP)
 
@@ -45,13 +45,13 @@ dades/diamants-SEED_%.RData : build_data.R
 08-solucio/solucio1_%.pdf : 08-solucio.Rmd 04-dades_aleatori/%.RData 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
-08B-solucio/solucio2_%.pdf : 08B-solucio.Rmd 04B-dades_aleatori/%.RData 
+08B-solucio/solucio2_%.pdf : 08B-solucio.Rmd 04-dades_aleatori/%.RData 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
 09-enunciat_correccio/enunciat_cor1_%.html : 09-enunciat_correccio.Rmd 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
-09B-enunciat_correccio/enunciat_cor2_%.pdf : 09B-enunciat_correccio.Rmd 07B-correccio.RData
+09B-enunciat_correccio/enunciat_cor2_%.html : 09B-enunciat_correccio.Rmd 
 	Rscript -e '.ID = "$*"; IN = "$<"; OUT = "$@"; source("$(RMD2HTML)")'
 
 docs/enunciat_%.html : treball_estadistica.Rmd dades/diamants-SEED_%.RData

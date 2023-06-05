@@ -1,329 +1,191 @@
 ---
-title: "Treball Pràctic d'Estadística Aplicada"
-output: pdf_document
+title: "Guia per corregir el segon treball d'Estadística Aplicada"
+output: 
+  pdf_document: 
+    extra_dependencies: wrapfig
+header-includes:
+  - \usepackage[catalan]{babel}
 ---
 
 ```{r setup, include=FALSE}
-library(tidyverse)
-library(broom)
-library(DescTools)
 knitr::opts_chunk$set(echo = FALSE, comment = " ")
-if(!exists('.ID')){
-  .ID = '2002963'
-}
-load(sprintf('04B-dades_aleatori/%s.RData', .ID))
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(lmtest)
+library(readxl)
+if(!exists(".ID")) .ID = '2002963'
+penguins = read_excel( sprintf("05-enunciat/penguins_%s.xlsx", .ID))
+url_dades = sprintf("https://moodle2.udg.edu/pluginfile.php/1890669/mod_folder/content/0/penguins_%s.xlsx", .ID)
 ```
 
-## LES DADES
+## Sobre el bec dels pingüins
 
-El conjunt de dades que utilitzarem conté les dades de les espècies de plantes alpines _`r SPECIE1.LONG`_  i _`r SPECIE2.LONG`_ observades a la zona de Lieu-dit Aravo, al municipi de Valloire (França). A 75 zones es va registrar l'abundància de les dues espècies i diferentes característiques de la zona mostrejada. 
+* En aquest apartat és igualment correcte analitzar la semblança de la mitjana de la llargada del bec i el producte de 2.5 per la profunditat del bec utilitzant un interval de confiança o utilitzant un contrast de mitjanes per mostres aparellades.
 
-* `Site`: Identificador del lloc de mostreig.
-* ``r SPECIE1``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE1.LONG`_  a la zona mostrejada.
-* ``r SPECIE2``: Estimació de la taxa de l'abundància de l'espècie _`r SPECIE2.LONG`_  a la zona mostrejada.
-* `Slope`: Inclinació del terreny (en graus).
-* `Form`: Caracterització microtopogràfica de la forma del terreny en cinc categories: convex (_convexity_), pendent convex (_convex slope_), pendent accentuat (_right slope_), pendent còncau (_concave slope_), còncau (_concavity_).
-* `PhysD`: Pertorbació física. Percentatge de sòl sense vegetació a causa de processos físics.
-* `ZoogD`: Pertorbació zoogènica. Quantitat de sòl sense vegetació a causa de l'activitat de la marmota: no; alguns (_some_); alt (_high_).
+#### Interval de confiança {-}
+
+* Per valorar l'interval de confiança s'ha de construir la variable `difference = bill_length_mm - 2.5 * bill_depth_mm` i mirar si l'interval de confiança de la mitjana d'aquesta variable conté o no conté el zero.
+
+```{r}
+CI = confint(lm( ( bill_length_mm - 2.5 * bill_depth_mm)~ 1, data = penguins))
+rownames(CI) = 'IC 95%'
+colnames(CI) = NULL
+knitr::kable(CI)
+```
+
+* Tingueu en compte que si s'ha calculat la variable `difference` com `2.5 * bill_depth_mm - bill_length_mm` l'interval estarà del revès.
+* Cal justificar que si l'interval conté el zero, podem assumir que les mitjanes de les variables `bill_length_mm` i `2.5 * bill_depth_mm`, mentre que si l'interval no conté el zero aleshores tenim evidències de que les mitjanes de `bill_length_mm` i `2.5 * bill_depth_mm` són diferents.
+
+#### Contrast d'hipotesis {-}
+
+* Pel contrast d'hipòtesi tenim dues alternatives. O s'ha fet un test dues mitjanes per dades aparellades, o s'ha fet un test d'una mitjana utilitzant la variable `difference = bill_length_mm - 2.5 * bill_depth_mm`. En el primer cas, la hipòtesi nul·la seria
+
+\[
+\text{H}_0: \mu_\text{length} = \mu_\text{2.5 $\times$depth} \text{ vs } \text{H}_1: \mu_\text{length} \neq \mu_\text{2.5 $\times$depth}
+\]
+
+si s'ha optat per fer el contrast sobre la diferència, la hipòtesi nul·la podria estar escrita com
+
+\[
+\text{H}_0: \mu_\text{difference} = 0 \text{ vs } \text{H}_1: \mu_\text{difference} \neq 0
+\]
+
+El resultat que s'obté amb R fent el test de dades aparellades per dues mitjanes és
+
+```{r}
+with(penguins, t.test(bill_length_mm, 2.5 * bill_depth_mm, paired = TRUE))
+```
+
+que seria igual que si féssim el test sobre la variable `difference`
+
+```{r}
+difference = with(penguins, bill_length_mm - 2.5 * bill_depth_mm)
+t.test(difference)
+```
+
+* Cal que en el treball s'hi expliqui la conclusió del contrast en relació amb el valor $p$ observat.
+
+## Sobre el sexe dels pingüins
+
+### La proporció de pingüins mascle i femella a la zona és semblant. {-}
+
+En aquest apartat s'espera que es faci un contrast de bondat d'ajust. 
+
+* Per contrastar les hipòtesis
+
+\[
+\text{H}_0: \pi_\text{female} = 0.5 \text{ i } \pi_\text{male} = 0.5\text{ vs } \text{H}_1: \pi_\text{female} \neq 0.5 \text{ o } \pi_\text{male} \neq 0.5
+\]
+
+es pot utilitzar tant el test $\chi^2$:
+
+```{r, echo=TRUE}
+chisq.test(table(penguins$sex), p = c(0.5,0.5))
+```
+
+com el contrast G:
+
+```{r, echo=TRUE}
+library(DescTools)
+GTest(table(penguins$sex), p = c(0.5,0.5))
+```
+
+* També seria vàlid fer el contrast d'una proporció mirant si algun dels sexes podem assumir que és igual a 0.5.
+
+### La profunditat del bec és semblant en funció del sexe del pingüí. {-}
+
+En aquest apartat volem fer un contrast de comparació de mitjanes, en un disseny de mostres independents. Primer hem de mirar si podem assumir que la variància de la profunditat del bec és la mateixa pels dos sexes. Per poder assumir-ho podem fer el test F de dues variàncies:
+
+\[
+\text{H}_0: \sigma_\text{female} = \sigma_\text{male} \text{ vs } \text{H}_1: \sigma_\text{female} \neq \sigma_\text{male}
+\]
+
+```{r}
+var.test(bill_depth_mm~sex, data = penguins)
+```
+
+si veiem que les variàncies poden ser assumides iguals, haurem d'assumir-ho (i marcar l'opció variàncies igual) en contrastar les mitjanes:
+
+\[
+\text{H}_0: \mu_\text{female} = \mu_\text{male} \text{ vs } \text{H}_1: \mu_\text{female} \neq \mu_\text{male}
+\]
+
+```{r}
+t.test(bill_depth_mm~sex, data = penguins, var.equal = TRUE)
+```
+
+* Per veure si realment s'ha fet un contrast assumint variàncies iguals hauríem de veure el títol "Two Sample t-test" a la sortida d'R en lloc del títol "Welch Two Sample t-test" que és el test a utilitzar quan les variàncies no poden ser assumides iguals.
+
+### La distribució del sexe dels pingüins és independent de l'espècie. {-}
+
+En aquest apartat cal fer un contrast d'independència:
+
+\[
+\begin{array}{l}
+\text{H}_0: \text{Les variables sexe i espècie són independents}\\
+\text{H}_1: \text{Existeix alguna dependència entre les variables sexe i espècie}
+\end{array}
+\]
+
+```{r}
+with(penguins, chisq.test(table(sex, species)))
+```
+
+
+## Sobre els pingüins d'Adèlia
 
 ```{r, include=FALSE}
-url = sprintf("https://moodle2.udg.edu/pluginfile.php/1681165/mod_folder/content/0/%s.xlsx", .ID)
+penguins_adelie = penguins %>%
+  filter(species == 'Adelie')
 ```
 
-El conjunt de dades el trobareu disponible en format Excel a [`r url`](`r url`).
-
-Primeres línias del conjunt de dades:
-
-```{r, echo=FALSE}
-knitr::kable(head(dades))
-```
-
-\newpage
-
-## SOLUCIÓ
-
-1. Dòna un interval del `r sprintf("%0.f%%", 100*CONF_LEVEL[1])` de confiança de la mitjana poblacional de la variable  __`r NUM_RND[1]`__. _(0.5 punt)_ 
-
-Per calcular l'interval caldrà que anem al menú per realitzar un contrast d'una mitjana:
-
-```{r}
-X = dades[[NUM_RND[1]]]
-(t_ = t.test(X, conf.level = CONF_LEVEL[1])) 
-```
-
-D'on obtenim l'interval de confiança:
-
-```{r}
-t_%>% 
-  tidy() %>%
-  mutate(conf.level = sprintf("%d%%", 100*CONF_LEVEL[1])) %>%
-  select(conf.level, starts_with('conf')) %>%
-  knitr::kable()
-```
-
-__Observacions:__
-
-* Fixeu-vos que el nivell de confiança sigui el correcte: `r sprintf("%d%%", 100*CONF_LEVEL[1])`.
-* Per justificar que la mitjana segueix una distribució normal, i que per tant l'interval és correcte, es pot fer referència al teorema del límit central o justificar que la distribució de les dades és normal (i com a resultat, també la mitjana).
-
-\newpage
-
-2. Decideix si veus raonable pensar que és igual de probable observar cada una de les categòries de la variable __`r CAT_RND[1]`__. _(0.5 punt)_
-
-```{r}
-X = dades[[CAT_RND[1]]]
-K = n_distinct(X)
-P = rep(1/K, K)
-```
+Utilitzant la taula filtrada, volem veure si podem assumir que el pes dels pingüins és el mateix a les tres illes.
 
 \[
-\begin{matrix}
-H_0: & `r sprintf("%s = 1/%d", paste(sprintf("p_{\\text{%s}}", unique(X)), collapse = " = "), K)`\\
-H_1: & \text{Alguna categoria de `r CAT_RND[1]` és més probable que una altra}
-\end{matrix}
+\text{H}_0: \mu_\text{Biscoe} = \mu_\text{Dream} = \mu_\text{Torgersen} \text{ vs } \text{H}_1: \text{Algun $\mu_i$ és diferent de la resta }
 \]
 
-
-Cal definir la probabilitat igual per cada una de les categories:
-
-```{r, comment = ''}
-H0.chisq = chisq.test(table(X), p = P)$p.value >= 0.05
-H0.G = GTest(table(X), p = P)$p.value >= 0.05
-cat(sprintf("P = c(%s)\n", paste(sprintf("1/%d", rep(K,K)), collapse = ', ')))
-```
-
-i realitzar el contrast de bondat d'ajust utilitzant les freqüencies observades (menú de freqüencies):
-
-```{r}
-table(X)
-```
-
-Podem fer el test Xi-quadrat:
-
-```{r}
-cat(sprintf("chisq.test(c(%s), p = P)", paste(table(X), collapse=', ')))
-```
-
-```{r, echo=FALSE}
-chisq.test(table(X), p = P)
-```
-
-O el test G:
-
-```{r}
-cat(sprintf("GTest(c(%s), p = P)", paste(table(X), collapse=', ')))
-```
-
-```{r, echo=FALSE}
-GTest(table(X), p = P)
-```
-
-__Observacions:__
-
-* La interpretació, acceptar $H_0$ o rebutjar $H_0$ pot dependre del test que es faci. Recorda, treballant amb un nivell de significació del 5%, amb un valor p menor a 0.05 es rebutja $H_0$, altrament, no es tenen evidències per rebutjar, i per tant s'accepta la hipotesis nul·la. En aquest cas, pel test Xi quadrat `r  ifelse(H0.chisq, "s'accepta ($p\\geq0.05$)", "es rebutja ($p<0.05$)")` la hipòtesi nul·la, i amb el test G `r  ifelse(H0.G, "s'accepta ($p\\geq0.05$)", "es rebutja ($p<0.05$)")` la hipòtesis nul·la.
-
-\newpage
-
-3. Creus que existeixen evidències per pensar que la mitjana poblacional de la variable __`r SPECIE1`__ difereix entre les categòries de la variable __`r CAT_RND[2]`?__. _(0.75 punt)_
-
-
-```{r}
-Y = dades[[SPECIE1]]
-X = dades[[CAT_RND[2]]]
-```
-
-El contrast que estem plantejant és
+Farem un test Anova. Primer necessitem veure si podem assumir variàncies iguals en els residus (homoscedasticitat), ho comprovarem utilitzant el test de Levene
 
 \[
-\begin{matrix}
-H_0: & \text{La mitjana de la variable `r SPECIE1` és igual dins les categories  de `r CAT_RND[2]`}\\
-H_1: & \text{Existeix dependència entre ZoogD i la variable alt/baix}
-\end{matrix}
+\text{H}_0: \text{Els residus són homoscedastics  vs } \text{H}_1: \text{Els residus són heteroscedastics}
 \]
-
-o escrit d'altra manera:
-
-\[
-\begin{matrix}
-H_0: & `r paste(sprintf("\\mu_\\text{%s}", unique(X)), collapse = ' = ')`\\
-H_1: & \text{Algun $\mu_i$ és diferent}
-\end{matrix}
-\]
-
-Com que la variable categòrica té més de dues categories, realitzarem un contrast Anova.
 
 ```{r}
-summary(m <- aov(Y~X))
+DescTools::LeveneTest(body_mass_g~factor(island), data=penguins_adelie)
 ```
 
-i mirem com són els residus:
+Un cop comprovat, realitzarem el contrast Anova assumint o no variàncies iguals.
+
+* Assumint variàncies iguals:
 
 ```{r}
-par(mfrow=c(2,2))
+oneway.test(body_mass_g~factor(island), data=penguins_adelie, var.equal = TRUE)
+```
+
+* No assumint variàncies iguals:
+
+```{r}
+oneway.test(body_mass_g~factor(island), data=penguins_adelie, var.equal = FALSE)
+```
+
+Finalment, podem contrastar la normalitat utilitzant el test de Shapiro-Wilk
+
+\[
+\text{H}_0: \text{Tenim normalitat als residus  vs } \text{H}_1: \text{No tenim normalitat als residus}
+\]
+
+```{r}
+residus = residuals(m <- lm(body_mass_g~factor(island), data=penguins_adelie))
+shapiro.test(residus)
+```
+
+* Donarem per vàlid una justificació dels supòsits utilitzant els gràfics de diagnòstic
+
+```{r, fig.width=6, fig.height=5, out.width="50%", fig.align='center'}
+cpar = par(mfrow=c(2,2))
 plot(m)
+par(cpar)
 ```
 
-Caldrà comprovar l'homoscedasticitat i la normalitat dels residus:
-
-* Homoscedasticitat:
-
-\[
-\begin{matrix}
-H_0: & `r paste(sprintf("\\sigma_\\text{%s}", unique(X)), collapse = ' = ')`\\
-H_1: & \text{Algun $\sigma_i$ és diferent}
-\end{matrix}
-\]
-
-o 
-
-també
-
-\[
-\begin{matrix}
-H_0: & \text{Els residus són homoscedastics}\\
-H_1: & \text{Els residus no són homoescedastics}
-\end{matrix}
-\]
-
-```{r}
-LeveneTest(Y, X)
-```
-
-* Normalitat:
-
-\[
-\begin{matrix}
-H_0: & \text{Els residus són normals}\\
-H_1: & \text{Els residus no són normals}
-\end{matrix}
-\]
-
-Podem intentar fer el contrast sobre els residus del model,
-
-```{r}
-shapiro.test(m$residuals)
-```
-
-o bé el contrast de normalitat dins de cada grup,
-
-```{r}
-tapply(Y, X, shapiro.test)
-```
-
-En cas de no complir-se l'homocesdasticitat, caldria realitzar el contrast Anova amb variàncies diferents:
-
-```{r}
-oneway.test(Y~X)
-```
-
-__Observacions:__
-
-* En avaluar la normalitat, fixeu-vos que depenent de si es fa sobre els residus o per grups, els resultats poden diferir. En el treball corregit, cal que les conclusions siguin coherents amb el procés seguit. 
-* Si s'ha observat que no existeix homoscedasticitat, és necessari fer el test amb variàncies diferents.
-* Per la interpretació caldria discutir on són les diferències entre categories, o bé fent una anàlisi posthoc, o directament comentant les diferències.
-
-\newpage
-
-4. Crea una nova variable que prengui el valor 'alt' si __`r SPECIE1`__ és superior a 1, i 'baix' altrament. Creus que el valor d'aquesta nova variables és independent de la variable `ZoogD`? _(1.5 punt)_
-
-\[
-\begin{matrix}
-H_0: & \text{ZoogD és independent de la variable alt/baix}\\
-H_1: & \text{Existeix dependència entre ZoogD i la variable alt/baix}
-\end{matrix}
-\]
-
-Podeu realitzar el contrast d'independència, podeu realitzar el test Xi-quadrat:
-
-```{r}
-X1 = if_else(dades[[SPECIE1]] > 1, 'alt', 'baix')
-X2 = dades[['ZoogD']]
-```
-
-```{r, echo=TRUE}
-chisq.test(table(X1, X2))
-```
-
-o el test G:
-
-```{r, echo=TRUE}
-GTest(table(X1, X2))
-```
-
-o bé el test exacte de Fisher:
-
-```{r, echo=TRUE}
-fisher.test(table(X1,X2))
-```
-
-__Observacions:__
-
-* Depenent del test escollit, els resultats poden diferir. Considereu el test que s'hagi utilitzat en el treball.
-
-\newpage
-
-5. Creus que en mitjana existeixen diferencies entre les taxes de l'abundància de l'espècie __`r SPECIE1`__ i l'espècie __`r SPECIE2`__? _(0.75 punt)_
-
-Volem contrastar:
-
-\[
-\begin{matrix}
-H_0: & \mu_\text{`r SPECIE1`} = \mu_\text{`r SPECIE2`}\\
-H_1: & \mu_\text{`r SPECIE1`} \neq \mu_\text{`r SPECIE2`}
-\end{matrix}
-\]
-
-i estem en un disseny de dades aparellat.
-
-```{r}
-X1 = dades[[SPECIE1]]
-X2 = dades[[SPECIE2]]
-
-t.test(X1, X2, paired = TRUE)
-```
-
-__Observavions:__
-
-* Comproveu que s'hestà considerant un disseny de dades aparellat.
-* També es podria procedir de la següent manera: primer es calcula una nova columna que contingui la diferències entre `r SPECIE1` i `r SPECIE2`, i després, es realitza un contrast per veure si la mitjana d'aquesta diferència es pot assumir igual a zero.
-
-\newpage 
-
-6. Crea una nova variable definida pel logaritme (funció `log()` d'R) del quocient entre les taxes de les dues espècies: __`r SPECIE1`__ i __`r SPECIE2`__ ( ``r sprintf("log(%s/%s)", SPECIE1, SPECIE2)`` ). Fixeu-vos que aquest logquocient ens indica quina és l'abundància de l'espècie __`r SPECIE1`__ respecte l'abundància de l'espècie __`r SPECIE2`__. Decideix si aquesta variable que acabes de crear és, en mitjana, diferent de zero. Independentment del que t'hagi sortit, explica quina seria la interpretació que donaries si obtinguessis que, en mitjana, la variable creada és diferent de zero?  _(1 punt)_
-
-Primerament, cal construir la nova variable com el log-quocient de les taxes de les dues espècies:
-
-```{r, echo=FALSE}
-X = log(dades[[SPECIE1]] / dades[[SPECIE2]])
-cat(sprintf("X = log(%s/%s)", SPECIE1, SPECIE2))
-```
-
-Volem contrastar les següents hipòtesis:
-
-\[
-\begin{matrix}
-H_0: & \mu_\text{log(`r SPECIE1`/`r SPECIE2`)} = 0\\
-H_1: & \mu_\text{log(`r SPECIE1`/`r SPECIE2`)} \neq 0
-\end{matrix}
-\]
-
-Per decidir si la nova variable és diferent de zero, cal realitzar un contrast t:
-
-```{r}
-t.test(X)
-```
-
-Al mirar si el quocient de taxes és diferent de zero, estem mirant si una espècie és més abundant que una altra. Més formalment, donat que log(a/b) = log(a) - log(b), podem reescriure el contrast com:
-
-\[
-\begin{matrix}
-H_0: & \mu_\text{log(`r SPECIE1`)} = \mu_\text{log(`r SPECIE2`)}\\
-H_1: & \mu_\text{log(`r SPECIE1`)} \neq \mu_\text{log(`r SPECIE2`)}
-\end{matrix}
-\]
-
-```{r}
-Specie1 = dades[[SPECIE1]]
-Specie2 = dades[[SPECIE2]]
-t.test(log(Specie1), log(Specie2), paired = TRUE)
-```
