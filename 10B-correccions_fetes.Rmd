@@ -1,0 +1,21 @@
+---
+title: "Notes primer treball"
+date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
+output:
+  html_document:
+    self_contained: yes
+---
+
+```{r setup, include=FALSE}
+library(DT)
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+colfunc <- colorRampPalette(c("#83c988", "#d45137"))
+```
+
+```{r, echo=FALSE}
+dcorr %>%
+  arrange(id) %>%
+  datatable(escape = FALSE, options = list(
+    pageLength = -1, dom = 'ft', ordering=F))
+```
