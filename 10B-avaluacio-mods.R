@@ -12,6 +12,7 @@ dnotes_individuals = dassignments %>%
   left_join(dcorr_individual_nota, by = 'id') %>%
   arrange(desc(nota_treball)) %>%
   mutate(
+    nota_treball = if_else(id %in% c('u1990597', 'u1979629'), 0, nota_treball),
     no_corr = if_else(id %in% c("u1986921"), 0, no_corr),
     nota_correccio = 0.5 * (3 - no_corr),
     nota_final = nota_treball + nota_correccio,
