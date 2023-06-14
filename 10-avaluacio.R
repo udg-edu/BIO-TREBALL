@@ -141,10 +141,26 @@ dpuntuacions = dpuntuacions %>%
            p4_1 = 1, p4_2 = 1, p4_3 = 1)
   ) 
 
+tibble(id_treb = 'grimer', nota = 2,
+       p1_1 = 1, p1_2 = 0, p1_3 = 1, p1_4 = 1, p1_5 = 1,
+       p2_1 = 1, p2_2 = 1, p2_3 = 1, p2_4 = 1,
+       p3a_1 = 1, p3a_2 = 1, p3a_3 = 1,
+       p3b_1 = 1, p3b_2 = 1, p3b_3 = 1,
+       p3c_1 = 1, p3c_2 = 0, p3c_3 = 1,
+       p4_1 = 1, p4_2 = 1, p4_3 = 1) %>%
+  transmute(
+    id_treb,
+    p1 = (p1_2 + 1) * (p1_3 + p1_4 + 2 * p1_5) / 8,
+    p2 = (p2_1 + 1) * (p2_2 + p2_3 + 2 * p2_4) / 8,
+    p3a = (p3a_1 + p3a_2 + 2 * p3a_3) / 4,
+    p3b = (p3b_1 + p3b_2 + 2 * p3b_3) / 4,
+    p3c = (p3c_1 + p3c_2 + 2 * p3c_3) / 4,
+    p4 = (2 * p4_1 + p4_2 + p4_3)/4) 
 
 dpuntuacions_manual = bind_rows(
   tibble(id_treb = "rapidash", p1 = 0.5, p2 = 1, p3a = 0.5, p3b = 1, p3c = 1, p4 = 1),
-  tibble(id_treb = "slowpoke", p1 = 0.5, p2 = 1, p3a = 1, p3b = 1, p3c = 0.75, p4 = 1))
+  tibble(id_treb = "slowpoke", p1 = 0.5, p2 = 1, p3a = 1, p3b = 1, p3c = 0.75, p4 = 1),
+  tibble(id_treb = "grimer", p1 = 0.5, p2 = 1, p3a = 1, p3b = 0.75, p3c = 1, p4 = 1))
 
 dnotes_treballs  = dpuntuacions %>%
   transmute(
@@ -172,10 +188,19 @@ dnotes_individuals = dassignments %>%
     nota_final_round = ceiling(2*nota_final)/2
   )
 
-
-notes_finals = dnotes_individuals %>%
-  arrange(id) %>%
-  select(id, p1:p4, `Treball (8.5)` = nota_treball, `Correcció (1.5)` = nota_correccio, `Nota final` = nota_final_round)
+dassignments %>%
+  filter(id_group == 'grimer') %>%
+  distinct(id, id_group) %>%
+  inner_join(dnotes_treballs, by = c('id_group' = 'id_treb')) %>%
+  left_join(dcorr_alumnes_no_fetes, by = 'id') %>%
+  replace_na(list(no_corr = 0L)) %>%
+  left_join(dcorr_individual_preguntes_summ, by = 'id') %>%
+  left_join(dcorr_individual_nota, by = 'id') %>%
+  arrange(desc(nota_treball)) %>%
+  slice_head(n = 4) %>%
+  select(id:nota_treball) %>%
+  mutate(nota_final =  ceiling(2*(nota_treball/8.5*10)/2)) %>%
+  knitr::kable()
 
 save.image(file = '10-avaluacio.RData')
 

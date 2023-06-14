@@ -1,5 +1,5 @@
 ---
-title: "Notes primer treball"
+title: "Correccions fetes del segon treball"
 date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
 output:
   html_document:

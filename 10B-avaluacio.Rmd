@@ -1,16 +1,34 @@
 ---
-title: "Notes primer treball"
+title: "Notes segon treball"
 date: "`r format(Sys.time(), '%d %B, %Y %H:%M')`"
-output: html_document
+output:
+  html_document:
+    self_contained: yes
 ---
 
 ```{r setup, include=FALSE}
+library(DT)
 library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
+load('10B-avaluacio.RData')
+colfunc <- colorRampPalette(c("#83c988", "#d45137"))
 ```
 
 ```{r, echo=FALSE}
+n.2 = notes_finals %>%
+  left_join(select(dnotes_individuals, id, n.2), by = 'id') %>%
+  pull(n.2)
+vcuts = 0:max(n.2, na.rm=TRUE)
+n.2 = replace_na(n.2, 1000)
 
 notes_finals %>%
-  knitr::kable()
+  mutate(N.2 = n.2) %>%
+  datatable(escape = FALSE, options = list(
+    pageLength = -1, dom = 'ft', ordering=F,
+    columnDefs = list(list(visible=FALSE, targets='N.2')))) %>%
+  formatStyle("Correcció (1.5)", 
+              valueColumns = "N.2", fontWeight = 'bold',
+              color = styleEqual(c(1000, vcuts),
+                                          c('black', colfunc(length(vcuts))))
+            )
 ```
